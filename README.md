@@ -10,7 +10,7 @@ node server.js
 brunch watch --server
 ```
 
-## check out the bios' view on `localhost:3333/#bios`
+## check out the bios' view on `localhost:3333/`
 
 ## based on the Brunch with Marionette:
 ## Brunch with Marionette

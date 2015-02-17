@@ -1,12 +1,12 @@
 {
-  "author": "Simeon Bateman <simeon@simb.co>",
-  "name": "Brunch-With-Marionette",
-  "description": "MarionetteJS application template for Brunch.io",
-  "version": "2.0.0",
+  "author": "Armin Akhavan <armin.akhavan@gmail.com>",
+  "name": "artistsnetwork",
+  "description": "Network visualization with D3",
+  "version": "0.0.0",
   "homepage": "",
   "repository": {
     "type": "git",
-    "url": "git@github.com/simbco/brunch-with-marionette"
+    "url": "git@github.com/arminakvn/artistsnetwork"
   },
   "engines": {
     "node": "0.8.x",
@@ -25,8 +25,10 @@
     "coffee-script-brunch": "^1.8.0",
     "css-brunch": "^1.7.0",
     "eco-brunch": "^1.7.5",
+    "express": "^4.11.2",
     "handlebars-brunch": "^1.7.8",
     "javascript-brunch": "^1.7.1",
+    "mongoose": "^3.8.23",
     "stylus-brunch": "^1.8.1",
     "uglify-js-brunch": "^1.7.7"
   },

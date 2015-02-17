@@ -33,10 +33,10 @@ module.exports = class GraphView extends Backbone.Marionette.ItemView
 		w = $(@el).innerWidth()
 		h = $(@el).innerHeight()
 		console.log "myGraph el", @id
-		vis = @vis = d3.select('#graph').append('svg:svg').attr('width', 400).attr('height', 400)
-		@force = d3.layout.force().gravity(.05).distance(100).charge(-100).size([
-			w
-			h
+		vis = @vis = d3.select('#graph').append('svg:svg').attr('width', 400).attr('height', 600)
+		@force = d3.layout.force().gravity(.05).distance(200).charge(-100).size([
+			400
+			600
 		])
 		@nodes = @force.nodes(nodes)
 		console.log "@nodes", @nodes

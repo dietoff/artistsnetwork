@@ -2,7 +2,7 @@
 using brunch for environment and coffeescript for scripts.
 ## starting the mongodb
 ```
-mongo --path data/db --rest
+mongod --path data/db --rest
 ```
 ## running the development servers, and watch the project to re-compile
 ```

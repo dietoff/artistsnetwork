@@ -1,3 +1,4 @@
+application = require('application')
 BiosModel = require 'models/biosModel'
 BiosCollection = require 'models/biosCollection'
 # Bios = new BiosCollection
@@ -6,8 +7,8 @@ BioView = require 'views/BioView'
 
 module.exports = class BiosView extends Backbone.Marionette.LayoutView
 	template: 'views/templates/bios'
-	# id: 'region-graph'
-	
+	id: 'bios'
+	$el: $('#bios')
 	
 	#shoud be bios
 	# childView: bioView
@@ -32,8 +33,9 @@ module.exports = class BiosView extends Backbone.Marionette.LayoutView
     	# @listenTo(@collection, "add", @render)
 	
 	onShow: ->
-		$(document).ready ->
-			d3.json 'http://localhost:3001/bios', (error, text) ->
+		$(document).ready =>
+			# @el = $('#region-bios')
+			d3.json 'http://localhost:3001/bios', (error, text) =>
 				console.log "text", text
 
 		# text = []
@@ -56,11 +58,13 @@ module.exports = class BiosView extends Backbone.Marionette.LayoutView
 				console.log "inside visulize"
 				Height = height
 				Width = width
+				# @el = $('#region-bios')
 				@_textDomEl = document.createElement('div')
-				console.log @_textDomEl
-				$('body').append @_textDomEl
-				$(@_textDomEl).attr( "id", "ArtistsViz" )
-				@_textDomObj = $(@_textDomEl).attr( "id", "ArtistsViz" )
+				# console.log "@el", @el
+				@el = @$el
+				@el.append @_textDomEl
+				# $(@_textDomEl).attr( "id", "#{@id}" )
+				@_textDomObj = $(@_textDomEl).attr( "id", "#{@id}" )
 				@_textDomObj.css('width', Width/2)
 				@_textDomObj.css('height', Height)
 				@_textDomObj.css('background-color', 'white')
@@ -102,8 +106,9 @@ module.exports = class BiosView extends Backbone.Marionette.LayoutView
 			     ).on("mouseenter", (d,i) =>
 			      	console.log "@stttttttt", this
 			      	id = "line-#{i}"
-			      	@addNode(d)
-			      	@addLink(1, 1)
+			      	# @addNode(d)
+			      	# @addLink(1, 1)
+			      	application.vent.trigger "addNodes", d
 			     ).on("mouseout", (d,i) ->
 			      	d3.select(this).transition().duration(1000).style("color", "rgb(72,72,72)").style("background-color", "white").style "opacity", 1
 			      	return

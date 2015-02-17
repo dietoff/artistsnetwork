@@ -1,7 +1,8 @@
 application = require('application')
 # HomeView = require('views/HomeView')
-# NetworkView = require('views/NetworkView')
+NetworkView = require('views/NetworkView')
 BiosView = require('views/BiosView')
+GraphView = require('views/GraphView')
 BiosModel = require 'models/biosModel'
 BiosCollection = require 'models/biosCollection'
 # Bios = new BiosCollection
@@ -51,16 +52,26 @@ module.exports = class Router extends Backbone.Marionette.AppRouter
 			# 		console.log "bios", Bios
 			bv = new BiosView#(collection:Bios)
 			application.layout.content.show(bv)
-		# network: ->
-		# 	nv = new networkkView(collection:text)
-		# 	application.layout.content.show(nv)
+			# @layout = new AppLayout()
+   			# @layout.render()
+		
+		addNodes: (node) ->
+			console.log "this is the controller recieving the node"
+			@gv = new GraphView()
+			@nv.regionGraph.show(@gv)
+
+
+		network: ->
+			@nv = new NetworkView()
+			application.layout.content.show(@nv)
 	)
 	ViewController = new ViewController
 	controller: ViewController
 	appRoutes:
 		# '': 'home'
-		# 'network': 'network'
+		'': 'network'
 		'bios' : 'bios'
+		'graph/:node': 'addNodes'
 
 	# home: =>
 	# 	hv = new HomeView()

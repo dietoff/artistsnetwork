@@ -30,6 +30,10 @@ class Application extends Backbone.Marionette.Application
         @addInitializer((options) =>
             # Instantiate the router
             Router = require 'lib/router'
+            @vent = new Backbone.Wreqr.EventAggregator()
+            @vent.on 'addNodes', (d) ->
+                console.log "vent works and this is d: ", d
+                Backbone.history.navigate "graph/#{d.Name}", trigger: true 
             @router = new Router()
         )
 

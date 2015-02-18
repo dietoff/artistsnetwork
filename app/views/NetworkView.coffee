@@ -33,10 +33,10 @@ module.exports = class NetworkView extends Backbone.Marionette.LayoutView
 		# console.log "collection", @collection
 		width = 960
 		height = 500
-		# @graphView = new GraphView()
-		# @regionGraph.show(@graphView)
-		@biosView = new BiosView()
-		@regionBios.show(@biosView)	
+		@graphView = new GraphView()
+		@regionGraph.show(@graphView)
+		# @biosView = new BiosView()
+		# @regionBios.show(@biosView)	
 		# svg = d3.select("network-view").append("svg").attr("width", width).attr("height", height)
 
 		# force = d3.layout.force().gravity(.05).distance(100).charge(-100).size([width, height])

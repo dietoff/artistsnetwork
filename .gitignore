@@ -1,6 +1,7 @@
 node_modules
 public
 bower_components
+cleaned
 combined.csv
 graphData.coffee
 MASTER-ALL-BIOS.csv

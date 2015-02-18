@@ -33,7 +33,7 @@ class Application extends Backbone.Marionette.Application
             @vent = new Backbone.Wreqr.EventAggregator()
             @vent.on 'addNodes', (d) ->
                 console.log "vent works and this is d: ", d
-                Backbone.history.navigate "graph/#{d.Name}", trigger: true 
+                Backbone.history.navigate "onartist/#{d.Name}", trigger: false 
             @router = new Router()
         )
 

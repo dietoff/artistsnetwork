@@ -54,16 +54,19 @@ module.exports = class Router extends Backbone.Marionette.AppRouter
 			application.layout.content.show(bv)
 			# @layout = new AppLayout()
    			# @layout.render()
-		
+
 		addNodes: (node) ->
 			console.log "this is the controller recieving the node"
+			console.log node
 			@gv = new GraphView()
 			@nv.regionGraph.show(@gv)
 
-
-		network: ->
-			@nv = new NetworkView()
-			application.layout.content.show(@nv)
+		onArtist: (artist) ->
+   			console.log "thos os onArtist", artist
+   		
+   		network: ->
+   			@nv = new NetworkView()
+   			application.layout.content.show(@nv)
 	)
 	ViewController = new ViewController
 	controller: ViewController
@@ -72,6 +75,7 @@ module.exports = class Router extends Backbone.Marionette.AppRouter
 		'': 'network'
 		'bios' : 'bios'
 		'graph/:node': 'addNodes'
+		'onartist/:artist' : 'onArtist'
 
 	# home: =>
 	# 	hv = new HomeView()

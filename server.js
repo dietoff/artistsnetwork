@@ -156,14 +156,14 @@
     var query;
     query = this.model('ArtistNodes').find({});
     query.where('type', this.type);
-    query.limit();
+    query.limit(100);
     return query.exec(cb);
   };
 
   ArtistEdgesSchema.methods.findLimited = function(cb) {
     var query;
     query = this.model('ArtistEdges').find({});
-    query.limit();
+    query.limit(50);
     return query.exec(cb);
   };
 

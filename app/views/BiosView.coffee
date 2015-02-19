@@ -53,9 +53,6 @@ module.exports = class BiosView extends Backbone.Marionette.LayoutView
 					r: 30
 				width = 800
 				height = 800
-				console.log " collection",  @collection
-				# svg = d3.select('body').append('svg').attr('width', width/2).attr('height', height/2)
-				console.log "inside visulize"
 				Height = height
 				Width = width
 				# @el = $('#region-bios')
@@ -114,18 +111,4 @@ module.exports = class BiosView extends Backbone.Marionette.LayoutView
 			      	return
 			    )  
 			    .transition().duration(1).delay(1).style("opacity", 1)
-			    # console.log @_d3text
-			    # @_textDomEl
-				# Bios.fetch
-				# 	success: (data) =>
-				# 		models: data.toJSON()
-				# 		console.log data.toJSON()
-				# 		text = data.toJSON
-					# done: (data)->
-					# 	console.log "Bios view"
-					# 	@collection = Bios
-					# 	console.log "Nodes", Bios
-					# @collection = Bios	
-				
-					# artistsList = new ArtistsNetwork(text).visulize()
 		

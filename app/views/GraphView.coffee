@@ -108,10 +108,10 @@ module.exports = class GraphView extends Backbone.Marionette.ItemView
 				w = $(@el).innerWidth()
 				h = $(@el).innerHeight()
 				console.log $(@el)
-				vis = @vis = d3.select('#graph').append('svg:svg').attr('width', 800).attr('height', 800)
+				vis = @vis = d3.select('#graph').append('svg:svg').attr('width', 1000).attr('height', 1000)
 				@force = d3.layout.force().gravity(.05).distance(200).charge(-100).size([
-					800
-					800
+					1000
+					1000
 				])
 				console.log "_links", _links
 				console.log "_nodes", _nodes
@@ -135,7 +135,7 @@ module.exports = class GraphView extends Backbone.Marionette.ItemView
 
 				nodeEnter = node.enter().append('g').attr('class', 'node').call(@force.drag)
 				nodeEnter.append('circle').attr('r', 5).style('fill', 'black').attr('x', '-8px').attr('y', '-8px').attr('width', '4px').attr 'height', '4px'
-				nodeEnter.append('text').attr('class', 'nodetext').attr('dx', 12).attr('dy', '.35em')#.text (d) ->
+				nodeEnter.append('text').attr('class', 'nodetext').attr('dx', 12).attr('dy', '.35em').text (d) ->
 				node.exit().remove()
 				@force.on 'tick', ->
 					link.attr('x1', (d) ->

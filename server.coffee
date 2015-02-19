@@ -33,7 +33,7 @@ ArtistSchema = new Schema({
   source: String
   edgetype: String
   target: String
-}, collection: 'sampleartists')
+}, collection: 'artists')
 ArtistNodesSchema = new Schema({
   _id: Schema.Types.ObjectId
   Id: String
@@ -83,7 +83,7 @@ BiosSchema.methods.findLimited = (cb) ->
 
 ArtistSchema.methods.findLimited = (cb) ->
   query = @model('Artist').find({})
-  query.limit()
+  query.limit(2000)
   query.exec cb
 
 ArtistSchema.methods.findByTarget = (cb) ->

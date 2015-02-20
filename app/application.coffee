@@ -9,8 +9,6 @@ class Application extends Backbone.Marionette.Application
             # Freeze the object
             Object.freeze? this
         )
-
-        # Application.vent = new Backbone.Wreqr.EventAggregator()
         
         @addInitializer( (options) =>
             # set the modules/apps within the apllication
@@ -33,8 +31,7 @@ class Application extends Backbone.Marionette.Application
             Router = require 'lib/router'
             @vent = new Backbone.Wreqr.EventAggregator()
             @vent.on 'addNodes', (d) ->
-                console.log "vent works and this is d: ", d
-                Backbone.history.navigate "onartist/#{d.Name}", trigger: false 
+                Backbone.history.navigate "graph/#{d.Name}", trigger: true 
             @router = new Router()
         )
 

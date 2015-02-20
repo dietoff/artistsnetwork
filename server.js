@@ -69,8 +69,9 @@
 
   ArtistEdgesSchema = new Schema({
     _id: Schema.Types.ObjectId,
-    Source: String,
-    Target: String
+    source: String,
+    target: String,
+    edgetype: String
   }, {
     collection: 'armoryedge'
   });

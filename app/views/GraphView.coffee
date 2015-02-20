@@ -1,11 +1,23 @@
 ArtistsModule = require 'lib/graphModule'
 application = require 'application'
 module.exports = class GraphView extends Backbone.Marionette.ItemView
+	@startWithParent = false
 	template: 'views/templates/graph'
-	id: 'graph'
-	$el: $('#graph')
+	id: 'graph-map'
+	$el: $('graph-map') # gget the element as a leaflet dom el
 	artistNodes: []
 	links: []
+	
+	onThisArtist: (node) =>
+		for key, value of @artistNodes
+			if value.name == node
+				# good example http://bl.ocks.org/d3noob/5141528
+				# using the example to bind transitions
+				# get and highlight and ...
+
+			else
+				# get, and node for that artist
+
 	onShow: ->
 		$(document).ready =>
 			d3.json 'http://localhost:3001/armoryedges', (error, nodes) =>
@@ -14,7 +26,7 @@ module.exports = class GraphView extends Backbone.Marionette.ItemView
 				id = 0
 				for artist in nodes
 					# make a list of artist names when data arrives and keep it
-					@artistNodes.push {'name' :artist.source, 'id': id}
+					@artistNodes.push {'name' :artist.source, 'id': id, 'edgetype': artist.edgetype}
 					id = id + 1
 				
 				# using the data to create links and nodes in format
@@ -47,11 +59,31 @@ module.exports = class GraphView extends Backbone.Marionette.ItemView
 					link.source = _nodes[link.source] or (_nodes[link.source] = name: link.source)
 					link.target = _nodes[link.target] or (_nodes[link.target] = name: link.target)
 					return
+				_m = application.GraphModule.getMap()
+				_textDomEl = L.DomUtil.create('div', 'graph_up', @$el[0])
+				_textDomEl.innerHTML = "<div class=graph'></div>"
+				console.log _textDomEl
+				L.DomUtil.enableTextSelection(_textDomEl) 
+				# L.DomEvent.disableClickPropagation(_textDomEl)
+				_m.getPanes().overlayPane.appendChild(_textDomEl)
+				_textDomObj = $(L.DomUtil.get(_textDomEl))
+				draggable = new L.Draggable(_textDomEl)
+				draggable.disable()
+				_textDomEl.firstChild.onmousedown = _textDomEl.firstChild.ondblclick = L.DomEvent.stopPropagation
+				L.DomEvent.addListener _textDomEl, 'mouseover', ((e) ->
+        			$(e.target).css('cursor','default')
+        			e.preventDefault()
+				_textDomObj.css('width', $(_m.getContainer())[0].clientWidth/2)
+				_textDomObj.css('height', $(_m.getContainer())[0].clientHeight)
+				_textDomObj.css('right', $(_m.getContainer())[0].clientWidth/4)
+				_textDomObj.css('background-color', 'white')
+				_textDomObj.css('overflow', 'scroll')
 				@el = @$el
+				L.DomUtil.setPosition(L.DomUtil.get(_textDomEl), L.point($(_m.getContainer())[0].clientWidth/2, 0), disable3D=0) 
 				nodes = @artistNodes
-
+				fx = new L.PosAnimation()
 				#  good example:  http://jsfiddle.net/bc4um7pc/
-				vis = @vis = d3.select('#graph').append('svg:svg').attr('width', w).attr('height', h)
+				vis = @vis = d3.select('.graph').append('svg:svg').attr('width', w).attr('height', h)
 				@force = d3.layout.force().gravity(.15).linkDistance(100).charge(-80).size([
 					w
 					h
@@ -74,20 +106,22 @@ module.exports = class GraphView extends Backbone.Marionette.ItemView
 				node = @vis.selectAll('g.node').data(d3.values(_nodes), (d) ->
 					d.name
 				)
-				console.log  @artistNodes
 				nodeEnter = node.enter().append('g').attr('class', 'node').call(@force.drag)
-				nodeEnter.append('circle').attr('r', w/225).style('fill', (d) ->
-					if d.edgetype == 'Location'
-						return 'red'
-					else
-						return 'black'
+				nodeEnter.append('circle').attr('r', w/225).style('fill', (d) =>
+					if @artistNodes[d.name]
+						if @artistNodes[d.name].edgetype == 'Date'
+							return 'red'
+						else
+							return 'black'
 				).attr('x', '-8px').attr('y', '-8px').attr('width', '4px').attr 'height', '4px'
-				nodeEnter.append('text').attr('class', 'nodetext').attr('dx', 12).attr('dy', '.35em').text (d) ->
+				nodeEnter.append('text').attr('class', 'nodetext').attr('dx', 12).attr('dy', '.35em').attr('id', (d,i) ->
+					return i
+				).text (d) ->
 					return d.name
 				node.exit().remove()
 				
 
-				@force.on 'tick', ->
+				@force.on 'tick', =>
 					link.attr('x1', (d) ->
 						d.source.x
 					).attr('y1', (d) ->
@@ -98,9 +132,18 @@ module.exports = class GraphView extends Backbone.Marionette.ItemView
 						d.target.y
 					node.attr('transform', (d) ->
 						'translate(' + d.x + ',' + d.y + ')'
+					).style('fill', (d) =>
+						if @artistNodes[d.name]
+							if @artistNodes[d.name].edgetype == 'Date'
+								return 'red'
+							else
+								return 'black'
 					)
 					return
 				
+				@force.on 'start', =>
+					@force.tick()
 				@force.start()
-				console.log "@el", $(@el).innerWidth()
+
+
 

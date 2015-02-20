@@ -18,6 +18,8 @@ module.exports = class BiosView extends Backbone.Marionette.LayoutView
 	
 	onShow: ->
 		$(document).ready =>
+			@_m = application.GraphModule.getMap()
+			
 			# @el = $('#region-bios')
 			# ajax the data, when load setup
 			d3.json 'http://localhost:3001/bios', (error, text) =>
@@ -30,60 +32,13 @@ module.exports = class BiosView extends Backbone.Marionette.LayoutView
 				height = 800
 				Height = height
 				Width = width
+				# console.log "@_m", @_m
+				# console.log textControl
+				application.GraphModule.makeControler(@$el, Width, Height, _margin, text, @_m)
+				@_m.whenReady =>
+					console.log "mapredy"
+				
 				# @el = $('#region-bios')
 				# creat a DOM elements and add to the view
-				@_textDomEl = document.createElement('div')
-				@el = @$el
-				@el.append @_textDomEl
-				# $(@_textDomEl).attr( "id", "#{@id}" )
-				@_textDomObj = $(@_textDomEl).attr( "id", "#{@id}" )
-				@_textDomObj.css('width', Width/2)
-				@_textDomObj.css('height', Height)
-				@_textDomObj.css('background-color', 'white')
-				@_textDomObj.css('overflow', 'visibile')
-				# get the div as a d3 object
-				@_d3text = d3.select(@_textDomEl).append('div').attr("width", width + _margin.l + _margin.r).attr("height", height + _margin.t + _margin.b)#.append("g")
-				.attr("transform", "translate(" + _margin.l + "," + _margin.t + ")")
-				.append("ul").style("list-style-type", "none").style("padding-left", "0px")
-				.attr("width", Width/3 )
-				.attr("height", Height-80)
-				@_d3li = @_d3text
-				.selectAll("li")
-			    .data(text)
-			    .enter()
-			    .append("li")
-			    @_d3li.style("font-family", "Helvetica")
-			    .style("line-height", "2")
-			    .style("border", "0px solid gray")
-			    .style("margin-top", "15px")
-			    .style("padding-top", "15px")
-			    .style("padding-bottom", "15px")
-			    .style("padding-right", "20px")
-			    .style("padding-left", "40px")
-			    # assign id to elements
-			    .attr("id", (d, i) =>
-			       	"line-#{i}" 
-			     	)
-			    .text((d,i) =>
-			      	d.FirstParagraph   
-			    	)
-			    .style("font-size", "12px")
-			    .style("color", "rgb(72,72,72)" )
-			    # bind interactions to eacl li element
-			    .on("mouseover", (d,i) ->
-			      	console.log @, this
-			      	$(this).css('cursor','pointer')
-			      	d3.select(this).transition().duration(0).style("color", "black").style("background-color", "rgb(208,208,208) ").style "opacity", 1
-			      	return 
-			     ).on("mouseenter", (d,i) =>
-			      	id = "line-#{i}"
-			      	# call functions if needed
-			      	# @addNode(d)
-			      	# @addLink(1, 1)
-			      	application.vent.trigger "addNodes", d
-			     ).on("mouseout", (d,i) ->
-			      	d3.select(this).transition().duration(1000).style("color", "rgb(72,72,72)").style("background-color", "white").style "opacity", 1
-			      	return
-			    )  
-			    .transition().duration(1).delay(1).style("opacity", 1)
+				
 		

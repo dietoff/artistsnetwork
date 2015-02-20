@@ -56,12 +56,12 @@ module.exports = class Router extends Backbone.Marionette.AppRouter
    			# @layout.render()
 
 		addNodes: (node) ->
-			console.log "this is the controller recieving the node"
-			console.log node
-			@gv = new GraphView()
-			@nv.regionGraph.show(@gv)
+			if @gv is undefined
+				@gv = new GraphView() 
+				@nv.regionGraph.show(@gv)
+			@gv.onThisArtist(node)
 
-		onArtist: (artist) ->
+		onThisArtist: (artist) ->
    			console.log "thos os onArtist", artist
    		
    		network: ->
@@ -75,7 +75,7 @@ module.exports = class Router extends Backbone.Marionette.AppRouter
 		'': 'network'
 		'bios' : 'bios'
 		'graph/:node': 'addNodes'
-		'onartist/:artist' : 'onArtist'
+		'onartist/:artist' : 'onThisArtist'
 
 	# home: =>
 	# 	hv = new HomeView()

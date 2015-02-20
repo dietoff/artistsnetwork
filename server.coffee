@@ -41,8 +41,9 @@ ArtistNodesSchema = new Schema({
 }, collection: 'armorynode')
 ArtistEdgesSchema = new Schema({
   _id: Schema.Types.ObjectId
-  Source: String
-  Target: String
+  source: String
+  target: String
+  edgetype: String
 }, collection: 'armoryedge')
 OrgNodesSchema = new Schema({
   _id: Schema.Types.ObjectId

@@ -20,6 +20,7 @@
     "marionette": "~2.0.2",
     "bootstrap": "~3.2.0",
     "d3": "~3.5.3",
-    "queue-async": "~1.0.7"
+    "queue-async": "~1.0.7",
+    "mapbox.js": "~2.1.5"
   }
 }

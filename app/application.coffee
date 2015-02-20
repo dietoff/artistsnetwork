@@ -13,7 +13,8 @@ class Application extends Backbone.Marionette.Application
         # Application.vent = new Backbone.Wreqr.EventAggregator()
         
         @addInitializer( (options) =>
-
+            # set the modules/apps within the apllication
+            # to start when application initialised
             AppLayout = require 'views/AppLayout'
             @layout = new AppLayout()
             @layout.render()

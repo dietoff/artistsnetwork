@@ -1,3 +1,4 @@
+# load the requirements
 # ArtistModel = require 'models/artistModel'
 # ArtistCollection = require 'models/artistCollection'	
 GraphView = require 'views/GraphView'	
@@ -9,15 +10,15 @@ module.exports = class NetworkView extends Backbone.Marionette.LayoutView
 	id: 'main-content'
 	$el: $('#main-content')
 	# el: 'div'
+	# setup two primary regions 
 	regions:
 		regionBios: "#region-bios"
 		regionGraph: "#region-graph"
 	initialize: ->
 
 	onShow: ->
+		# do when view is rendered
 		@regionManager.addRegions @regions
-		width = 960
-		height = 500
 		@graphView = new GraphView()
 		@regionGraph.show(@graphView)
 		

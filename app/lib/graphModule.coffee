@@ -150,6 +150,9 @@ application.module 'GraphModule', (GraphModule, App, Backbone, Marionette, $, _)
         #   @force.tick()
 
         @force.start()
+
+        L.DomUtil.addClass(_textDomEl, "leaflet-control-container")
+        L.DomUtil.removeClass(_textDomEl, "graph_up")
     console.log "d3", d3
     console.log "looks like this is the best!"
     return
@@ -178,6 +181,7 @@ application.module 'GraphModule', (GraphModule, App, Backbone, Marionette, $, _)
     @_m.boxZoom.enable()
     @_m.scrollWheelZoom.disable()
     @_m.dragging.disable()
+    console.log "@_m", @_m
     return
 
   GraphModule.getGraph = ->
@@ -242,7 +246,7 @@ application.module 'GraphModule', (GraphModule, App, Backbone, Marionette, $, _)
             # _this.showLocation(d)
             # _this._viewSet = _this._m.getCenter() if _this._viewSet is undefined
              # showLocation(d)
-          L.DomEvent.addListener @_leafletli, 'mouseout', (e) ->
+          L.DomEvent.addListener @_leafletli, 'mouseout', (e) =>
             timeout = 0
             # e.stopPropagation()
             setTimeout (->
@@ -254,9 +258,6 @@ application.module 'GraphModule', (GraphModule, App, Backbone, Marionette, $, _)
 
             # Animation complete.
             )
-            # L.DomUtil.setOpacity(L.DomUtil.get(_this._domEl), 0)
-            # _this.removeAnyLocation()
-
           L.DomEvent.addListener @_leafletli, 'mouseover', (e) ->
             # L.DomUtil.getViewportOffset(_domEl)
             $(this).css('cursor','pointer')

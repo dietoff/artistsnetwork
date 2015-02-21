@@ -15,6 +15,9 @@ module.exports = class GraphView extends Backbone.Marionette.ItemView
 		@artistNodes = application.GraphModule.getAllArtists()
 		# console.log "@artistNodes", @artistNodes
 		@vis = application.GraphModule.getGraph()
+		@_m = application.GraphModule.getMap()
+
+		# L.DomEvent.removeListener.removeListener(L.DomUtil.get($("graph"))
 		for key, value of @artistNodes
 			if value.name == node
 				_thisNodes = @vis.selectAll('g.node')

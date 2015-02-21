@@ -164,7 +164,7 @@
   ArtistEdgesSchema.methods.findLimited = function(cb) {
     var query;
     query = this.model('ArtistEdges').find({});
-    query.limit(50);
+    query.limit(200);
     return query.exec(cb);
   };
 

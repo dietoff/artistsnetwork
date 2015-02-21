@@ -56,9 +56,17 @@ module.exports = class Router extends Backbone.Marionette.AppRouter
    			# @layout.render()
 
 		addNodes: (node) ->
-			if @gv is undefined
+			if @nv is undefined
+				@nv = new NetworkView()
+				application.layout.content.show(@nv)
 				@gv = new GraphView() 
 				@nv.regionGraph.show(@gv)
+			else if @gv is undefined
+				@gv = new GraphView() 
+				@nv.regionGraph.show(@gv)
+				if application.GraphModule.getGraph() is undefined
+					application.GraphModule.makeGraph()
+				
 			@gv.onThisArtist(node)
 
 		onThisArtist: (artist) ->

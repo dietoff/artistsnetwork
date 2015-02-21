@@ -25,9 +25,12 @@ module.exports = class NetworkView extends Backbone.Marionette.LayoutView
 		# @regionManager.addRegions @regions
 		
 		@biosView = new BiosView()
-		# @graphView = new GraphView()
+		@graphView = new GraphView()
 		@regionBios.show(@biosView)
-		# @regionNetwork.show(@graphView)
+		@regionGraph.show(@graphView)
+		@vent = new Backbone.Wreqr.EventAggregator()
+		@vent.on 'onArtist', (d) =>
+			@graphView.onArtist(d)
 		
 
 

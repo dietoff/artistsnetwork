@@ -104,7 +104,7 @@ ArtistNodesSchema.methods.findByType = (cb) ->
   query.exec cb
 ArtistEdgesSchema.methods.findLimited = (cb) ->
   query = @model('ArtistEdges').find({})
-  query.limit(50)
+  query.limit(200)
   query.exec cb
 
 # declare mongoose models

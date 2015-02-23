@@ -81,9 +81,6 @@ application.module 'GraphModule', (GraphModule, App, Backbone, Marionette, $, _)
         _links.forEach (link) ->
           link.source = _nodes[link.source] or (_nodes[link.source] = name: link.source)
           link.target = _nodes[link.target] or (_nodes[link.target] = {name: link.target, group: link.group, lat: link.lat, long: link.long})
-          # _nodes[link.group] or (_nodes[link.group] = group: link.group)
-          # _nodes[link.lat] or (_nodes[link.lat] = lat: link.lat)
-          # _nodes[link.long] or (_nodes[link.long] = long: link.long)
 
           return
         _m = @getMap()
@@ -95,6 +92,8 @@ application.module 'GraphModule', (GraphModule, App, Backbone, Marionette, $, _)
 
         # L.DomEvent.disableClickPropagation(_textDomEl)
         _m.getPanes().overlayPane.appendChild(_textDomEl)
+        console.log "offset", L.DomUtil.getViewportOffset _textDomEl
+        offset = L.DomUtil.getViewportOffset _textDomEl
         _textDomObj = $(L.DomUtil.get(_textDomEl))
         draggable = new L.Draggable(_textDomEl)
         draggable.disable()
@@ -115,7 +114,7 @@ application.module 'GraphModule', (GraphModule, App, Backbone, Marionette, $, _)
         L.DomEvent.disableClickPropagation(@$el )
 
         # set the location of the force graph's elemetnt using leaflet
-        # L.DomUtil.setPosition(L.DomUtil.get(_textDomEl), L.point($(_m.getContainer())[0].clientWidth - $(_m.getContainer())[0].clientWidth/1.3, $(_m.getContainer())[0].clientHeight - $(_m.getContainer())[0].clientHeight/0.98), disable3D=0) 
+        # L.DomUtil.setPosition(L.DomUtil.get(_textDomEl), offset, $(_m.getContainer())[0].clientHeight - $(_m.getContainer())[0].clientHeight/0.98), disable3D=0) 
         w = $(_m.getContainer())[0].clientWidth#/1.2
         h = $(_m.getContainer())[0].clientHeight
         nodes = @artistNodes
@@ -152,7 +151,7 @@ application.module 'GraphModule', (GraphModule, App, Backbone, Marionette, $, _)
           d.name
         )
         nodeEnter = node.enter().append('g').attr('class', 'node').call(@force.drag)
-        nodeEnter.append('circle').property("id", (d, i) => "node-#{i}").attr('r', 3).style("opacity", 0.8).style('fill', (d) =>
+        nodeEnter.append('circle').property("id", (d, i) => "node-#{i}").attr('r', 4).style("opacity", 0.8).style('fill', (d) =>
           if d.group
             return "none"# color(d.group)
           else
@@ -208,12 +207,10 @@ application.module 'GraphModule', (GraphModule, App, Backbone, Marionette, $, _)
         inertiaDeceleration: 4000
         animate: true
         duration: 1.75
-        zoomControl: false
+        zoomControl: true
         infoControl: false
         easeLinearity: 0.1
         )
-    # credits = L.control.attribution().addTo(map)
-    # credits.addAttribution({"attribution": "<a href='https://www.mapbox.com/about/maps/' target='_blank'>&copy; Mapbox &copy; OpenStreetMap</a> <a class='mapbox-improve-map' href='https://www.mapbox.com/map-feedback/' target='_blank'>Improve this map</a>"});
     @_m.setView([
               42.34
               0.12
@@ -221,11 +218,12 @@ application.module 'GraphModule', (GraphModule, App, Backbone, Marionette, $, _)
     @_m.boxZoom.enable()
     @_m.scrollWheelZoom.disable()
     @_m.dragging.disable()
-    # @_m.onZoomEnd()
+    @_m.on 'zoomstart dragstart', =>
+      @force.stop()
+    @_m.on 'zoomend dragend', =>
+      console.log @force
+      @force.start()
     return
-
-  # GraphModule.offArtist = ->
-  #   return #graph
 
   GraphModule.getGraph = ->
     graph = @vis
@@ -237,14 +235,9 @@ application.module 'GraphModule', (GraphModule, App, Backbone, Marionette, $, _)
   GraphModule.getAllArtists = ->
     return @artistNodes
   GraphModule.makeControler = ($el, Width, Height, _margin, text, @_m)->
-    # textControl = L.Control.extend(
-    #   options:
-    #     position: "topleft"
-      # onAdd: (map) =>
         @_m = GraphModule.getMap()  
-          # create the control container with a particular class name
+        # create the control container with a particular class name
 
-        # @_textDomEl = L.DomUtil.get('bios')
         biosRegion = $("#region-bios")
         @_textDomEl = L.DomUtil.create('div', 'container paratext-info')
         @_el = L.DomUtil.create('svg', 'svg')
@@ -262,7 +255,6 @@ application.module 'GraphModule', (GraphModule, App, Backbone, Marionette, $, _)
         L.DomUtil.setOpacity(L.DomUtil.get(@_textDomEl), .8)
         # here it needs to check to see if there is any vewSet avalable if not it should get it from the lates instance or somethign
         @_viewSet = @_m.getCenter() if @_viewSet is undefined
-        # L.DomUtil.setPosition(L.DomUtil.get(@_textDomEl), L.point(10, -65), disable3D=0)
         @_d3text = d3.select(".paratext-info")
         .append("ul").style("list-style-type", "none").style("padding-left", "0px")
         .attr("width", $(@_m.getContainer())[0].clientWidth/5 )
@@ -286,18 +278,10 @@ application.module 'GraphModule', (GraphModule, App, Backbone, Marionette, $, _)
           timeout = undefined
           L.DomEvent.addListener @_leafletli, 'click', (e) ->
             e.stopPropagation()
-            # _this.hide_context()
-            # _this.removeAnyLocation()
-            # _this.setViewByLocation(d)
-            # _this.showLocation(d)
-            # _this._viewSet = _this._m.getCenter() if _this._viewSet is undefined
-             # showLocation(d)
           L.DomEvent.addListener @_leafletli, 'mouseout', (e) =>
             timeout = 0
             GraphModule.Controller.offArtist(d)
-            @force.tick()
-            # App.navigate '#map/', trigger: true
-            # e.stopPropagation()
+            @force.start()
             setTimeout (->
               $(L.DomUtil.get(_this._domEl)).animate
                 opacity: 0
@@ -308,23 +292,15 @@ application.module 'GraphModule', (GraphModule, App, Backbone, Marionette, $, _)
             # Animation complete.
             )
           L.DomEvent.addListener @_leafletli, 'mouseover', (e) ->
-            # L.DomUtil.getViewportOffset(_domEl)
             $(this).css('cursor','pointer')
             # e.stopPropagation()
-            # _this.clearMap()
-            # _this.removeAnyLocation()
             App.vent.trigger 'addNodes', d
+            
             timeout = setTimeout(->
               _this._m._initPathRoot()
               if timeout isnt 0 
-                # _this.setViewByLocation(d)
-                # _this.showLocation(d)
-                # _this.vizLocation(d, i)
-                
-                # _this.find_relations(d)
-                # _this.show_contexts(d, e)
+                @force.stop()
                 timeout = 0
-                # _this._viewSet = _this._m.getCenter() if _this._viewSet is undefined
             , 900)
             return 
           , ->
@@ -345,19 +321,6 @@ application.module 'GraphModule', (GraphModule, App, Backbone, Marionette, $, _)
           return
         )  
         .transition().duration(1).delay(1).style("opacity", 1)
-        # @_m.whenReady =>
-        #   @_m.setView([
-        #     42.34
-        #     -71.12
-        #   ], 13)
-        
-      # onSetView: (map) =>
-      #   @_m = map
-
-
-    # )
-    # div = new textControl()
-    # @_m.addControl div
     return @_textDomEl
 
   return

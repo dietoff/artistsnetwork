@@ -41,6 +41,12 @@ BiosCollection = require 'models/biosCollection'
 
 module.exports = class Router extends Backbone.Marionette.AppRouter
 	ViewController = Marionette.Controller.extend(
+
+		network: ->
+   			@nv = new NetworkView()
+   			application.layout.content.show(@nv)
+
+
 		bios: ->
 			# Bios = new BiosCollection()
 			# Bios.fetch
@@ -66,27 +72,20 @@ module.exports = class Router extends Backbone.Marionette.AppRouter
 				@nv.regionGraph.show(@gv)
 				if application.GraphModule.getGraph() is undefined
 					application.GraphModule.makeGraph()
-				
 			@gv.onThisArtist(node)
 
-		onThisArtist: (artist) ->
-   			console.log "thos os onArtist", artist
+		offArtist: ->
+			@gv.offThisArtist()
+
    		
-   		network: ->
-   			@nv = new NetworkView()
-   			application.layout.content.show(@nv)
 	)
+
 	ViewController = new ViewController
 	controller: ViewController
 	appRoutes:
-		# '': 'home'
 		'': 'network'
 		'bios' : 'bios'
 		'graph/:node': 'addNodes'
-		'onartist/:artist' : 'onThisArtist'
-
-	# home: =>
-	# 	hv = new HomeView()
-	# 	application.layout.content.show(hv)
+		'offArtist' : 'offArtist'
 	
 	

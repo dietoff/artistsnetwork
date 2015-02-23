@@ -1,8 +1,37 @@
 # night used
 application = require('application')
+
 application.module 'GraphModule', (GraphModule, App, Backbone, Marionette, $, _) ->
+  @startWithParent = false
+  GraphModule.Controller =
+      makeMap: ->
+        console.log "controller make map"
+      offArtist: (d)->
+        console.log "offArtist", d
+
+      # write methods
+      # # getAllNodes
+      # # getNodesBy(name, value)
+
+  class GraphModule.Router extends Marionette.AppRouter
+    appRoutes:
+      "map" : "map"
+
+  API = 
+
+    map: () ->
+      GraphModule.Controller.makeMap() 
+
+    offArtist: (d) ->
+      GraphModule.Controller.offArtist(d)
+
+
+  App.addInitializer ->
+    new GraphModule.Router
+      controller: API 
   # The context of the function is also the module itself
   this == GraphModule
+
   # => true
   # Private Data And Functions
   # --------------------------
@@ -19,11 +48,11 @@ application.module 'GraphModule', (GraphModule, App, Backbone, Marionette, $, _)
   GraphModule.makeGraph = ->
     @$el = $('graph-map')
     @artistNodes = []
-    d3.json 'http://localhost:3001/armoryedges', (error, nodes) =>
+    d3.json 'http://localhost:3001/artists', (error, nodes) =>
         id = 0
         for artist in nodes
           # make a list of artist names when data arrives and keep it
-          @artistNodes.push {'name' :artist.source, 'id': id, 'edgetype': artist.edgetype}
+          @artistNodes.push {'name' :artist.source, 'id': id, 'group': artist.group}
           id = id + 1
         
         # using the data to create links and nodes in format
@@ -54,11 +83,15 @@ application.module 'GraphModule', (GraphModule, App, Backbone, Marionette, $, _)
         # Compute the distinct nodes from the links.
         _links.forEach (link) ->
           link.source = _nodes[link.source] or (_nodes[link.source] = name: link.source)
-          link.target = _nodes[link.target] or (_nodes[link.target] = name: link.target)
+          link.target = _nodes[link.target] or (_nodes[link.target] = {name: link.target, group: link.group, lat: link.lat, long: link.long})
+          # _nodes[link.group] or (_nodes[link.group] = group: link.group)
+          # _nodes[link.lat] or (_nodes[link.lat] = lat: link.lat)
+          # _nodes[link.long] or (_nodes[link.long] = long: link.long)
           # console.log "inside for each", link, _nodes
 
           return
         _m = @getMap()
+        console.log "nodes", _nodes, "_links", _links
         _textDomEl = L.DomUtil.create('div', 'graph_up', @$el[0])
         _textDomEl.innerHTML += "<div class='graph'></div>"
         console.log "_m", _m
@@ -82,12 +115,16 @@ application.module 'GraphModule', (GraphModule, App, Backbone, Marionette, $, _)
         _textDomObj.css('width', $(_m.getContainer())[0].clientWidth)
         _textDomObj.css('height', $(_m.getContainer())[0].clientHeight)
         # _textDomObj.css('right', $(_m.getContainer())[0].clientWidth/4)
-        _textDomObj.css('background-color', 'white')
+        _textDomObj.css('background-color', 'none')
         _textDomObj.css('overflow', 'scroll')
         @el = @$el
         L.DomEvent.disableClickPropagation(@$el )
-        L.DomUtil.setPosition(L.DomUtil.get(_textDomEl), L.point($(_m.getContainer())[0].clientWidth - $(_m.getContainer())[0].clientWidth/1.2, $(_m.getContainer())[0].clientHeight - $(_m.getContainer())[0].clientHeight/0.98), disable3D=0) 
-        w = $(_m.getContainer())[0].clientWidth/1.2
+
+        # set the location of the force graph's elemetnt using leaflet
+        # L.DomUtil.setPosition(L.DomUtil.get(_textDomEl), L.point($(_m.getContainer())[0].clientWidth - $(_m.getContainer())[0].clientWidth/1.3, $(_m.getContainer())[0].clientHeight - $(_m.getContainer())[0].clientHeight/0.98), disable3D=0) 
+        console.log $(_m.getContainer())[0].clientWidth/1.2
+        console.log $(_m.getContainer())[0].clientWidth
+        w = $(_m.getContainer())[0].clientWidth#/1.2
         h = $(_m.getContainer())[0].clientHeight
         nodes = @artistNodes
         fx = new L.PosAnimation()
@@ -98,6 +135,11 @@ application.module 'GraphModule', (GraphModule, App, Backbone, Marionette, $, _)
         L.DomEvent.addListener _graphEl, 'click', (e) ->
             L.DomEvent.stopPropagation e
             return
+
+
+        # setup the color scale
+        color = d3.scale.category20()
+        # some basic example http://jsfiddle.net/simonraper/bpKG4/light/
         # console.log "_graphEl", _graphEl  
         vis = @vis = d3.select('.graph').append('svg:svg').attr('width', w).attr('height', h)
         force = @force = d3.layout.force().gravity(.15).linkDistance(100).charge(-80).size([
@@ -107,32 +149,33 @@ application.module 'GraphModule', (GraphModule, App, Backbone, Marionette, $, _)
         @nodes = @force.nodes(d3.values(_nodes))
         links = @force.links()
         link = @vis.selectAll('.link').data(_links)
-        link.enter().insert("line", ".node").attr("class", "link")
+        link.enter().insert("line", ".node").attr("class", "link").style("opacity", 0.3)
         link.exit().remove()
         
-        node = @vis.selectAll('g.node').data(d3.values(_nodes), (d) ->
+        node = @vis.selectAll('g.node'
+        ).data(d3.values(_nodes), (d) ->
           d.name
         )
         nodeEnter = node.enter().append('g').attr('class', 'node').call(@force.drag)
-        nodeEnter.append('circle').property("id", (d, i) => "node-#{i}").attr('r', w/225).style('fill', (d) =>
-          if @artistNodes[d.name]
-            console.log @artistNodes[d.name].edgetype
-            if @artistNodes[d.name].edgetype == 'Organization'
-              return 'red'
-            else if @artistNodes[d.name].edgetype == 'Location'
-              return 'blue'
-            else if @artistNodes[d.name].edgetype == 'Date'
-              return 'gray'
-            else
-              return 'black'
-        ).attr('x', '-8px').attr('y', '-8px').attr('width', '4px').attr 'height', '4px'
+        nodeEnter.append('circle').property("id", (d, i) => "node-#{i}").attr('r', 5).style("opacity", 0.8).style('fill', (d) =>
+          if d.group
+            return "none"# color(d.group)
+          else
+            return "black"
+        ).attr('x', 'px').attr('y', 'px').attr('width', '4px').attr 'height', '4px'
         nodeEnter.append('text').attr('class', 'nodetext').attr('dx', 12).attr('dy', '.35em').attr('id', (d,i) ->
           return i
-        ).text (d) ->
-          return d.name
+        )#.text (d) ->
+         # return d.name
         node.exit().remove()
 
         @force.on 'tick', =>
+          node.attr('transform', (d) ->
+            if d.lat
+              'translate(' + _m.latLngToLayerPoint(L.latLng(d.long, d.lat)).x + ',' + _m.latLngToLayerPoint(L.latLng(d.long, d.lat)).y + ')'
+            else
+              'translate(' + d.x + ',' + d.y + ')'
+          )
           link.attr('x1', (d) ->
             d.source.x
           ).attr('y1', (d) ->
@@ -141,9 +184,6 @@ application.module 'GraphModule', (GraphModule, App, Backbone, Marionette, $, _)
             d.target.x
           ).attr 'y2', (d) ->
             d.target.y
-          node.attr('transform', (d) ->
-            'translate(' + d.x + ',' + d.y + ')'
-          )
           return
         
         # @force.on 'start', =>
@@ -157,11 +197,12 @@ application.module 'GraphModule', (GraphModule, App, Backbone, Marionette, $, _)
     console.log "looks like this is the best!"
     return
 
+
   GraphModule.makeMap = ->
     console.log d3
     map = $("#map-region").append("<div id='map'></div>")
     L.mapbox.accessToken = "pk.eyJ1IjoiYXJtaW5hdm4iLCJhIjoiSTFteE9EOCJ9.iDzgmNaITa0-q-H_jw1lJw"
-    @_m = L.mapbox.map("map", "arminavn.l943a2kc",
+    @_m = L.mapbox.map("map", "arminavn.l5loig7e",
         zoomAnimation: true
         attributionControl: false
         zoomAnimationThreshold: 4
@@ -177,12 +218,16 @@ application.module 'GraphModule', (GraphModule, App, Backbone, Marionette, $, _)
     @_m.setView([
               42.34
               -71.12
-            ], 13)
+            ], 2)
     @_m.boxZoom.enable()
     @_m.scrollWheelZoom.disable()
     @_m.dragging.disable()
     console.log "@_m", @_m
     return
+
+  # GraphModule.offArtist = ->
+  #   console.log "offArtist"
+  #   return #graph
 
   GraphModule.getGraph = ->
     graph = @vis
@@ -229,7 +274,7 @@ application.module 'GraphModule', (GraphModule, App, Backbone, Marionette, $, _)
         @_d3li.style("font-family", "Helvetica")
         .style("line-height", "2")
         .style("border", "0px solid gray")
-        .style("margin-top", "10px")
+        .style("margin-top", "20px")
         .style("padding-right", "20px")
         .style("padding-left", "40px")
         .attr("id", (d, i) =>
@@ -248,6 +293,10 @@ application.module 'GraphModule', (GraphModule, App, Backbone, Marionette, $, _)
              # showLocation(d)
           L.DomEvent.addListener @_leafletli, 'mouseout', (e) =>
             timeout = 0
+            GraphModule.Controller.offArtist(d)
+            console.log "@", @ 
+            @force.tick()
+            # App.navigate '#map/', trigger: true
             # e.stopPropagation()
             setTimeout (->
               $(L.DomUtil.get(_this._domEl)).animate
@@ -264,8 +313,7 @@ application.module 'GraphModule', (GraphModule, App, Backbone, Marionette, $, _)
             # e.stopPropagation()
             # _this.clearMap()
             # _this.removeAnyLocation()
-            application.vent.trigger 'addNodes', d
-            application.vent.trigger 'onArtist', d
+            App.vent.trigger 'addNodes', d
             timeout = setTimeout(->
               _this._m._initPathRoot()
               if timeout isnt 0 
@@ -282,9 +330,9 @@ application.module 'GraphModule', (GraphModule, App, Backbone, Marionette, $, _)
             return 
           , ->
             return
-          d.Name   
+          d.Name
         )
-        .style("font-size", "16px")
+        .style("font-size", "14px")
         .style("color", "rgb(72,72,72)" )
         .on("mouseover", (d,i) ->
           $(this).css('cursor','pointer')

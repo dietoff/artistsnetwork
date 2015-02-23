@@ -9,6 +9,7 @@ module.exports = class GraphView extends Backbone.Marionette.ItemView
 	links: []
 	
 	onThisArtist: (node) =>
+		console.log "onThisArtist"
 		# _thisNode = $("#"+"node-#{node}")
 		# console.log "_thisNode", _thisNode
 		# _thisNode.css("r", 120)
@@ -25,9 +26,9 @@ module.exports = class GraphView extends Backbone.Marionette.ItemView
 				d3.select(_thisNode[0]
 				).transition(
 				).duration(1000
-				).style("color", "rgb(72,72,72)"
-				).style("background-color", "white"
-				).style("opacity", 1).attr("r", 12)
+				# ).style("color", "rgb(72,72,72)"
+				# ).style("background-color", "white"
+				).style("opacity", 0.9).attr("r", 5).style("fill", "black")
 				# console.log "_thisNode", _thisNode
 				# _thisNode.css("r", 120)
 				# _thisNode = _thisNodes.filter((d, i) =>
@@ -42,7 +43,7 @@ module.exports = class GraphView extends Backbone.Marionette.ItemView
 
 			else
 				# get, and node for that artist
-
+	
 	onShow: ->
 		$(document).ready =>
 			

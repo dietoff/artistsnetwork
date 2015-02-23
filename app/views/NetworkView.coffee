@@ -28,9 +28,8 @@ module.exports = class NetworkView extends Backbone.Marionette.LayoutView
 		@graphView = new GraphView()
 		@regionBios.show(@biosView)
 		@regionGraph.show(@graphView)
-		@vent = new Backbone.Wreqr.EventAggregator()
-		@vent.on 'onArtist', (d) =>
-			@graphView.onArtist(d)
+
+
 		
 
 

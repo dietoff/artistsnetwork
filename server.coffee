@@ -31,8 +31,10 @@ BiosSchema = new Schema({
 ArtistSchema = new Schema({
   _id: Schema.Types.ObjectId
   source: String
-  edgetype: String
+  group: Number
   target: String
+  lat: String
+  long: String
 }, collection: 'artists')
 ArtistNodesSchema = new Schema({
   _id: Schema.Types.ObjectId
@@ -75,8 +77,16 @@ DateEdgesSchema = new Schema({
   Source: String
   Target: String
 }, collection: 'dateedge')
-# define the methods for the schma 
 
+
+# define schema level indexes
+
+ArtistSchema.index
+  source: 1
+  group: 1
+
+
+# define the methods for the schma 
 BiosSchema.methods.findLimited = (cb) ->
   query = @model('Bios').find({})
   query.limit()
@@ -84,7 +94,7 @@ BiosSchema.methods.findLimited = (cb) ->
 
 ArtistSchema.methods.findLimited = (cb) ->
   query = @model('Artist').find({})
-  query.limit(2000)
+  query.limit(900)
   query.exec cb
 
 ArtistSchema.methods.findByTarget = (cb) ->
@@ -93,14 +103,21 @@ ArtistSchema.methods.findByTarget = (cb) ->
   query.limit()
   query.exec cb
 
+ArtistSchema.methods.findBySource = (cb) ->
+  query = @model('Artist').find({})
+  console.log query
+  query.where 'source', @source
+  query.limit()
+  query.exec cb
+
 ArtistNodesSchema.methods.findLimited = (cb) ->
   query = @model('ArtistNodes').find({})
   query.limit()
   query.exec cb
-ArtistNodesSchema.methods.findByType = (cb) ->
-  query = @model('ArtistNodes').find({})
-  query.where 'type', @type
-  query.limit(100)
+ArtistSchema.methods.findByGroup = (cb) ->
+  query = @model('Artist').find({})
+  query.where 'group', @group
+  query.limit()
   query.exec cb
 ArtistEdgesSchema.methods.findLimited = (cb) ->
   query = @model('ArtistEdges').find({})
@@ -207,21 +224,24 @@ app.get '/artstsby/:t', (req, res) ->
     return
   return
 
-app.get '/artistsbytype/:t', (req, res) ->
+app.get '/artistsbygroup/:g', (req, res) ->
   res.header 'Access-Control-Allow-Origin', '*'
   res.header 'Access-Control-Allow-Headers', 'X-Requested-With'
-  artist = new ArtistNodes(type: req.params.t)
-  artist.findByType (err, artist) ->
+  artist = new Artist(group: req.params.g)
+  artist.findByGroup (err, artist) ->
     console.log artist
     res.json artist
-    # ArtistNodes.findById artist['_id'], (err, docs) ->
-    #   if !err
-    #     each = docs
-    #     each
-    #   else
-    #     console.log err
-    # res.json artist_nodes
   return
+
+
+app.get '/artistsbysource/:source', (req, res) ->
+  res.header 'Access-Control-Allow-Origin', '*'
+  res.header 'Access-Control-Allow-Headers', 'X-Requested-With'
+  artist = new Artist(source: req.params.source)
+  artist.findBySource (err, artist) ->
+    res.json artist
+  return
+
 
 exports.import = (req, res) ->
   Artist.create {

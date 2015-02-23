@@ -53,8 +53,10 @@
   ArtistSchema = new Schema({
     _id: Schema.Types.ObjectId,
     source: String,
-    edgetype: String,
-    target: String
+    group: Number,
+    target: String,
+    lat: String,
+    long: String
   }, {
     collection: 'artists'
   });
@@ -124,6 +126,11 @@
     collection: 'dateedge'
   });
 
+  ArtistSchema.index({
+    source: 1,
+    group: 1
+  });
+
   BiosSchema.methods.findLimited = function(cb) {
     var query;
     query = this.model('Bios').find({});
@@ -134,7 +141,7 @@
   ArtistSchema.methods.findLimited = function(cb) {
     var query;
     query = this.model('Artist').find({});
-    query.limit(2000);
+    query.limit(900);
     return query.exec(cb);
   };
 
@@ -146,6 +153,15 @@
     return query.exec(cb);
   };
 
+  ArtistSchema.methods.findBySource = function(cb) {
+    var query;
+    query = this.model('Artist').find({});
+    console.log(query);
+    query.where('source', this.source);
+    query.limit();
+    return query.exec(cb);
+  };
+
   ArtistNodesSchema.methods.findLimited = function(cb) {
     var query;
     query = this.model('ArtistNodes').find({});
@@ -153,11 +169,11 @@
     return query.exec(cb);
   };
 
-  ArtistNodesSchema.methods.findByType = function(cb) {
+  ArtistSchema.methods.findByGroup = function(cb) {
     var query;
-    query = this.model('ArtistNodes').find({});
-    query.where('type', this.type);
-    query.limit(100);
+    query = this.model('Artist').find({});
+    query.where('group', this.group);
+    query.limit();
     return query.exec(cb);
   };
 
@@ -261,15 +277,27 @@
     });
   });
 
-  app.get('/artistsbytype/:t', function(req, res) {
+  app.get('/artistsbygroup/:g', function(req, res) {
     var artist;
     res.header('Access-Control-Allow-Origin', '*');
     res.header('Access-Control-Allow-Headers', 'X-Requested-With');
-    artist = new ArtistNodes({
-      type: req.params.t
+    artist = new Artist({
+      group: req.params.g
     });
-    artist.findByType(function(err, artist) {
+    artist.findByGroup(function(err, artist) {
       console.log(artist);
+      return res.json(artist);
+    });
+  });
+
+  app.get('/artistsbysource/:source', function(req, res) {
+    var artist;
+    res.header('Access-Control-Allow-Origin', '*');
+    res.header('Access-Control-Allow-Headers', 'X-Requested-With');
+    artist = new Artist({
+      source: req.params.source
+    });
+    artist.findBySource(function(err, artist) {
       return res.json(artist);
     });
   });

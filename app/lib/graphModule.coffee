@@ -133,7 +133,7 @@ application.module 'GraphModule', (GraphModule, App, Backbone, Marionette, $, _)
         # some basic example http://jsfiddle.net/simonraper/bpKG4/light/
         vis = @vis = d3.select('.graph').append('svg:svg').attr('width', w).attr('height', h)
         force = @force = d3.layout.force(
-        ).gravity(.15
+        ).gravity(.2
         ).linkDistance(100
         ).charge(-80
         ).size([

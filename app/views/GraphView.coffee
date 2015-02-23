@@ -28,7 +28,7 @@ module.exports = class GraphView extends Backbone.Marionette.ItemView
 				).duration(1000
 				# ).style("color", "rgb(72,72,72)"
 				# ).style("background-color", "white"
-				).style("opacity", 0.9).attr("r", 5).style("fill", "black")
+				).style("opacity", 0.8).attr("r", 10).style("fill", "black")
 				# console.log "_thisNode", _thisNode
 				# _thisNode.css("r", 120)
 				# _thisNode = _thisNodes.filter((d, i) =>

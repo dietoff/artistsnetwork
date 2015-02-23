@@ -5,9 +5,7 @@ application.module 'GraphModule', (GraphModule, App, Backbone, Marionette, $, _)
   @startWithParent = false
   GraphModule.Controller =
       makeMap: ->
-        console.log "controller make map"
       offArtist: (d)->
-        console.log "offArtist", d
 
       # write methods
       # # getAllNodes
@@ -38,7 +36,6 @@ application.module 'GraphModule', (GraphModule, App, Backbone, Marionette, $, _)
   myData = 'this is private data'
 
   myFunction = ->
-    console.log myData
     return
 
   # Public Data And Functions
@@ -87,14 +84,11 @@ application.module 'GraphModule', (GraphModule, App, Backbone, Marionette, $, _)
           # _nodes[link.group] or (_nodes[link.group] = group: link.group)
           # _nodes[link.lat] or (_nodes[link.lat] = lat: link.lat)
           # _nodes[link.long] or (_nodes[link.long] = long: link.long)
-          # console.log "inside for each", link, _nodes
 
           return
         _m = @getMap()
-        console.log "nodes", _nodes, "_links", _links
         _textDomEl = L.DomUtil.create('div', 'graph_up', @$el[0])
         _textDomEl.innerHTML += "<div class='graph'></div>"
-        console.log "_m", _m
         L.DomUtil.enableTextSelection(_textDomEl) 
         L.DomEvent.disableClickPropagation(_textDomEl )
         L.DomEvent.disableClickPropagation(L.DomUtil.get(_textDomEl))
@@ -122,8 +116,6 @@ application.module 'GraphModule', (GraphModule, App, Backbone, Marionette, $, _)
 
         # set the location of the force graph's elemetnt using leaflet
         # L.DomUtil.setPosition(L.DomUtil.get(_textDomEl), L.point($(_m.getContainer())[0].clientWidth - $(_m.getContainer())[0].clientWidth/1.3, $(_m.getContainer())[0].clientHeight - $(_m.getContainer())[0].clientHeight/0.98), disable3D=0) 
-        console.log $(_m.getContainer())[0].clientWidth/1.2
-        console.log $(_m.getContainer())[0].clientWidth
         w = $(_m.getContainer())[0].clientWidth#/1.2
         h = $(_m.getContainer())[0].clientHeight
         nodes = @artistNodes
@@ -140,16 +132,19 @@ application.module 'GraphModule', (GraphModule, App, Backbone, Marionette, $, _)
         # setup the color scale
         color = d3.scale.category20()
         # some basic example http://jsfiddle.net/simonraper/bpKG4/light/
-        # console.log "_graphEl", _graphEl  
         vis = @vis = d3.select('.graph').append('svg:svg').attr('width', w).attr('height', h)
-        force = @force = d3.layout.force().gravity(.15).linkDistance(100).charge(-80).size([
+        force = @force = d3.layout.force(
+        ).gravity(.15
+        ).linkDistance(100
+        ).charge(-80
+        ).size([
           w
           h
         ])
         @nodes = @force.nodes(d3.values(_nodes))
         links = @force.links()
         link = @vis.selectAll('.link').data(_links)
-        link.enter().insert("line", ".node").attr("class", "link").style("opacity", 0.3)
+        link.enter().insert("line", ".node").attr("class", "link").style("opacity", 0.6)
         link.exit().remove()
         
         node = @vis.selectAll('g.node'
@@ -157,33 +152,40 @@ application.module 'GraphModule', (GraphModule, App, Backbone, Marionette, $, _)
           d.name
         )
         nodeEnter = node.enter().append('g').attr('class', 'node').call(@force.drag)
-        nodeEnter.append('circle').property("id", (d, i) => "node-#{i}").attr('r', 5).style("opacity", 0.8).style('fill', (d) =>
+        nodeEnter.append('circle').property("id", (d, i) => "node-#{i}").attr('r', 3).style("opacity", 0.8).style('fill', (d) =>
           if d.group
             return "none"# color(d.group)
           else
             return "black"
-        ).attr('x', 'px').attr('y', 'px').attr('width', '4px').attr 'height', '4px'
+        ).attr('x', '-1px').attr('y', '-1px').attr('width', '4px').attr 'height', '4px'
         nodeEnter.append('text').attr('class', 'nodetext').attr('dx', 12).attr('dy', '.35em').attr('id', (d,i) ->
           return i
-        )#.text (d) ->
-         # return d.name
+        ).text (d) ->
+          if d.group isnt 1
+            return d.name# color(d.group)
         node.exit().remove()
 
         @force.on 'tick', =>
+          link.attr('x1', (d) ->
+            d.source.x
+          ).attr('y1', (d) ->
+            d.source.y
+          ).attr('x2', (d) ->
+            if d.target.long
+              _m.latLngToLayerPoint(L.latLng(d.target.long, d.target.lat)).x
+            else
+              d.target.x
+          ).attr 'y2', (d) ->
+            if d.target.long
+              _m.latLngToLayerPoint(L.latLng(d.target.long, d.target.lat)).y
+            else
+              d.target.y
           node.attr('transform', (d) ->
             if d.lat
               'translate(' + _m.latLngToLayerPoint(L.latLng(d.long, d.lat)).x + ',' + _m.latLngToLayerPoint(L.latLng(d.long, d.lat)).y + ')'
             else
               'translate(' + d.x + ',' + d.y + ')'
           )
-          link.attr('x1', (d) ->
-            d.source.x
-          ).attr('y1', (d) ->
-            d.source.y
-          ).attr('x2', (d) ->
-            d.target.x
-          ).attr 'y2', (d) ->
-            d.target.y
           return
         
         # @force.on 'start', =>
@@ -193,13 +195,10 @@ application.module 'GraphModule', (GraphModule, App, Backbone, Marionette, $, _)
 
         L.DomUtil.addClass(_textDomEl, "leaflet-control-container")
         L.DomUtil.removeClass(_textDomEl, "graph_up")
-    console.log "d3", d3
-    console.log "looks like this is the best!"
     return
 
 
   GraphModule.makeMap = ->
-    console.log d3
     map = $("#map-region").append("<div id='map'></div>")
     L.mapbox.accessToken = "pk.eyJ1IjoiYXJtaW5hdm4iLCJhIjoiSTFteE9EOCJ9.iDzgmNaITa0-q-H_jw1lJw"
     @_m = L.mapbox.map("map", "arminavn.l5loig7e",
@@ -217,16 +216,15 @@ application.module 'GraphModule', (GraphModule, App, Backbone, Marionette, $, _)
     # credits.addAttribution({"attribution": "<a href='https://www.mapbox.com/about/maps/' target='_blank'>&copy; Mapbox &copy; OpenStreetMap</a> <a class='mapbox-improve-map' href='https://www.mapbox.com/map-feedback/' target='_blank'>Improve this map</a>"});
     @_m.setView([
               42.34
-              -71.12
+              0.12
             ], 2)
     @_m.boxZoom.enable()
     @_m.scrollWheelZoom.disable()
     @_m.dragging.disable()
-    console.log "@_m", @_m
+    # @_m.onZoomEnd()
     return
 
   # GraphModule.offArtist = ->
-  #   console.log "offArtist"
   #   return #graph
 
   GraphModule.getGraph = ->
@@ -239,32 +237,35 @@ application.module 'GraphModule', (GraphModule, App, Backbone, Marionette, $, _)
   GraphModule.getAllArtists = ->
     return @artistNodes
   GraphModule.makeControler = ($el, Width, Height, _margin, text, @_m)->
-    console.log $el
-    textControl = L.Control.extend(
-      options:
-        position: "topleft"
-      onAdd: (map) =>
-        @_m = map  
+    # textControl = L.Control.extend(
+    #   options:
+    #     position: "topleft"
+      # onAdd: (map) =>
+        @_m = GraphModule.getMap()  
           # create the control container with a particular class name
 
+        # @_textDomEl = L.DomUtil.get('bios')
+        biosRegion = $("#region-bios")
         @_textDomEl = L.DomUtil.create('div', 'container paratext-info')
         @_el = L.DomUtil.create('svg', 'svg')
-        @_m.getPanes().overlayPane.appendChild(@_el)
+        # @_m.getPanes().overlayPane.appendChild(@_el)
+        
+        biosRegion.append @_textDomEl
         # @_textDomEl_innerdiv = L.DomUtil.create('div', 'container paratext-info', 'container paratext-info')
         L.DomUtil.enableTextSelection(@_textDomEl)  
-        @_m.getPanes().overlayPane.appendChild(@_textDomEl)
+        # @_m.getPanes().overlayPane.appendChild(@_textDomEl)
         @_textDomObj = $(L.DomUtil.get(@_textDomEl))
-        @_textDomObj.css('width', $(@_m.getContainer())[0].clientWidth/3)
+        @_textDomObj.css('width', $(@_m.getContainer())[0].clientWidth/5)
         @_textDomObj.css('height', $(@_m.getContainer())[0].clientHeight)
         @_textDomObj.css('background-color', 'white')
         @_textDomObj.css('overflow', 'scroll')
         L.DomUtil.setOpacity(L.DomUtil.get(@_textDomEl), .8)
         # here it needs to check to see if there is any vewSet avalable if not it should get it from the lates instance or somethign
         @_viewSet = @_m.getCenter() if @_viewSet is undefined
-        L.DomUtil.setPosition(L.DomUtil.get(@_textDomEl), L.point(40, -65), disable3D=0)
+        # L.DomUtil.setPosition(L.DomUtil.get(@_textDomEl), L.point(10, -65), disable3D=0)
         @_d3text = d3.select(".paratext-info")
         .append("ul").style("list-style-type", "none").style("padding-left", "0px")
-        .attr("width", $(@_m.getContainer())[0].clientWidth/3 )
+        .attr("width", $(@_m.getContainer())[0].clientWidth/5 )
         .attr("height", $(@_m.getContainer())[0].clientHeight-80)
         @_d3li = @_d3text
         .selectAll("li")
@@ -294,7 +295,6 @@ application.module 'GraphModule', (GraphModule, App, Backbone, Marionette, $, _)
           L.DomEvent.addListener @_leafletli, 'mouseout', (e) =>
             timeout = 0
             GraphModule.Controller.offArtist(d)
-            console.log "@", @ 
             @force.tick()
             # App.navigate '#map/', trigger: true
             # e.stopPropagation()
@@ -317,7 +317,6 @@ application.module 'GraphModule', (GraphModule, App, Backbone, Marionette, $, _)
             timeout = setTimeout(->
               _this._m._initPathRoot()
               if timeout isnt 0 
-                console.log "d", d
                 # _this.setViewByLocation(d)
                 # _this.showLocation(d)
                 # _this.vizLocation(d, i)
@@ -351,16 +350,15 @@ application.module 'GraphModule', (GraphModule, App, Backbone, Marionette, $, _)
         #     42.34
         #     -71.12
         #   ], 13)
-        @_textDomEl
-      onSetView: (map) =>
-        @_m = map
+        
+      # onSetView: (map) =>
+      #   @_m = map
 
 
-    )
-    console.log @_m
-    div = new textControl()
-    @_m.addControl div
-    return @_m
+    # )
+    # div = new textControl()
+    # @_m.addControl div
+    return @_textDomEl
 
   return
 

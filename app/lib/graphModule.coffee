@@ -4,8 +4,24 @@ application = require('application')
 application.module 'GraphModule', (GraphModule, App, Backbone, Marionette, $, _) ->
   @startWithParent = false
   GraphModule.Controller =
-      makeMap: ->
-      offArtist: (d)->
+
+      highlightLinksBy: (sourceNode) =>
+        console.log "the node to hifhlofhtr by", sourceNode
+        # by_id = document.getElementById("linksource-#{each.index}")
+        # console.log "each index", "linksource-#{each.index}"
+        @vis.selectAll("line").filter((d, i) ->
+          d.source.name == sourceNode.name
+        ).style("opacity", 0.9)
+        # console.log "d", d
+        # console.log GraphModule._links
+        # for each in GraphModule._links
+
+        #   if each.source.name == source.name
+        #     _return_list.push each.target
+        return 
+
+      resetHighlightLinksBy: =>
+        @vis.selectAll("line").style("opacity", 0.2)
 
       # write methods
       # # getAllNodes
@@ -13,15 +29,19 @@ application.module 'GraphModule', (GraphModule, App, Backbone, Marionette, $, _)
 
   class GraphModule.Router extends Marionette.AppRouter
     appRoutes:
-      "map" : "map"
+      "highlightLinksBy" : "highlightLinksBy"
+      "resetHighlightLinksBy" : "resetHighlightLinksBy"
 
   API = 
 
     map: () ->
       GraphModule.Controller.makeMap() 
 
-    offArtist: (d) ->
-      GraphModule.Controller.offArtist(d)
+    highlightLinksBy: (d) ->
+      GraphModule.Controller.highlightLinksBy(d)
+
+    resetHighlightLinksBy: () ->
+      GraphModule.Controller.resetHighlightLinksBy(d)      
 
 
   App.addInitializer ->
@@ -186,31 +206,34 @@ application.module 'GraphModule', (GraphModule, App, Backbone, Marionette, $, _)
         #   return d3.transform(d3.select(@).attr("transform")).translate[0])
         @force.on 'tick', =>
           link.attr('stroke', (d) ->
-            if (document.getElementById("line-#{d.source.index}")) and $("#line-#{d.source.index}").position().top < 1200 and $("#line-#{d.source.index}").position().top > 20
+            if (document.getElementById("line-#{d.source.index}")) and $("#line-#{d.source.index}").position().top < 700 and $("#line-#{d.source.index}").position().top > 40
               return "#000"
             else
               return "none"
+          ).property("id", (d, i) => 
+            # console.log "link_d", d
+            "linksource-#{d.source.index}"
           )  
           link.attr('x1', (d) ->
-            if (document.getElementById("line-#{d.source.index}")) and $("#line-#{d.source.index}").position().top < 1200 and $("#line-#{d.source.index}").position().top > 20
-                $("#line-#{d.source.index}").position().left - offset.x/6
+            if (document.getElementById("line-#{d.source.index}")) and $("#line-#{d.source.index}").position().top < 700 and $("#line-#{d.source.index}").position().top > 40
+                $("#line-#{d.source.index}").position().left - offset.x/10
               # $("#line-#{value.id}").position().left
               # line = d3.select(document.getElementById("line-#{value.id}"))
         #       #   'translate(' + L.DomUtil.getViewportOffset(document.getElementById("line-#{value.id}")).x+ ',' + L.DomUtil.getViewportOffset(document.getElementById("line-#{value.id}")).y + ')'
             else
               # d.source.x
           ).attr('y1', (d) ->
-            if (document.getElementById("line-#{d.source.index}")) and $("#line-#{d.source.index}").position().top < 1200 and $("#line-#{d.source.index}").position().top > 20
-                $("#line-#{d.source.index}").position().top - offset.y
+            if (document.getElementById("line-#{d.source.index}")) and $("#line-#{d.source.index}").position().top < 700 and $("#line-#{d.source.index}").position().top > 40
+                $("#line-#{d.source.index}").position().top + 2 + (3 * offset.y) 
             else
               # d.source.y
           ).attr('x2', (d) ->
-            if d.target.long and (document.getElementById("line-#{d.source.index}")) and $("#line-#{d.source.index}").position().top < 1200 and $("#line-#{d.source.index}").position().top > 20
+            if d.target.long and (document.getElementById("line-#{d.source.index}")) and $("#line-#{d.source.index}").position().top < 700 and $("#line-#{d.source.index}").position().top > 40
               _m.latLngToLayerPoint(L.latLng(d.target.long, d.target.lat)).x
             else
               d.target.x
           ).attr 'y2', (d) ->
-            if d.target.long and (document.getElementById("line-#{d.source.index}")) and $("#line-#{d.source.index}").position().top < 1200 and $("#line-#{d.source.index}").position().top > 20
+            if d.target.long and (document.getElementById("line-#{d.source.index}")) and $("#line-#{d.source.index}").position().top < 700 and $("#line-#{d.source.index}").position().top > 40
               _m.latLngToLayerPoint(L.latLng(d.target.long, d.target.lat)).y
             else
               d.target.y
@@ -336,12 +359,14 @@ application.module 'GraphModule', (GraphModule, App, Backbone, Marionette, $, _)
         ).on("mouseover", (d,i) ->
           $(this).css('cursor','pointer')
           d3.select(this).transition().duration(0).style("color", "black").style("background-color", "rgb(208,208,208) ").style "opacity", 1
-          L.DomEvent.disableClickPropagation(this) 
-          L.DomEvent.disableClickPropagation($("#graph_up")) 
+          # L.DomEvent.disableClickPropagation(this) 
+          # L.DomEvent.disableClickPropagation($("#graph_up")) 
+          GraphModule.Controller.highlightLinksBy(d)
           return 
         ).on("mouseout", (d,i) ->
           d3.select(this).transition().duration(1000).style("color", "rgb(72,72,72)").style("background-color", "white").style "opacity", 1
-          L.DomEvent.disableClickPropagation(this) 
+          # L.DomEvent.disableClickPropagation(this) 
+          GraphModule.Controller.resetHighlightLinksBy()
           return
         ).append("text").text((d,i) =>
           console.log d
@@ -352,7 +377,7 @@ application.module 'GraphModule', (GraphModule, App, Backbone, Marionette, $, _)
               e.stopPropagation()
             L.DomEvent.addListener @_leafletli, 'mouseout', (e) =>
               timeout = 0
-              GraphModule.Controller.offArtist(d)
+              # GraphModule.Controller.offArtist(d)
               @force.start()
               setTimeout (->
                 $(L.DomUtil.get(_this._domEl)).animate
@@ -367,7 +392,9 @@ application.module 'GraphModule', (GraphModule, App, Backbone, Marionette, $, _)
               $(this).css('cursor','pointer')
               # e.stopPropagation()
               App.vent.trigger 'addNodes', d
-              
+              # GraphModule.Controller.onArtist(d)
+              # linkedTo = App.vent.trigger 'getLinksBy', d
+
               timeout = setTimeout(->
                 _this._m._initPathRoot()
                 if timeout isnt 0 
@@ -378,10 +405,9 @@ application.module 'GraphModule', (GraphModule, App, Backbone, Marionette, $, _)
             , ->
               return
             d.name
-        )
-        .style("font-size", "14px")
-        .style("color", "rgb(72,72,72)" )
-        .transition().duration(1).delay(1).style("opacity", 1)
+        ).style("font-size", "14px"
+        ).style("color", "rgb(72,72,72)" 
+        ).transition().duration(1).delay(1).style("opacity", 1)
     return @_textDomEl
 
   return

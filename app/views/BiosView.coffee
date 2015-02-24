@@ -10,7 +10,9 @@ module.exports = class BiosView extends Backbone.Marionette.LayoutView
 	template: 'views/templates/bios'
 	id: 'bios'
 	$el: $('#bios')
-	
+	ui: 'li': '.li'
+	# events: 'mouseover @ui.li': 'showBio'
+	# triggers: 'mouseover @ui.li': 'show:bio'
 	# shoud be bios- if used
 	# childView: bioView
 
@@ -46,7 +48,8 @@ module.exports = class BiosView extends Backbone.Marionette.LayoutView
 						return $(@).position().top
 					)
 					console.log $("#region-bios")[0]
-				
+			$("li").on 'mouseover', (e) =>
+				console.log "gets the mouse over"
 				# @el = $('#region-bios')
 				# creat a DOM elements and add to the view
 				

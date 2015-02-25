@@ -460,6 +460,8 @@ application.module 'GraphModule', (GraphModule, App, Backbone, Marionette, $, _)
           offset = L.DomUtil.getViewportOffset @_textDomEl
           if !L.Browser.touch
             L.DomEvent.disableClickPropagation @_textDomEl
+            L.DomEvent.on @_textDomObj, 'mouseover', L.DomEvent.stopPropagation
+            L.DomEvent.on @_textDomEl, 'mouseover', L.DomEvent.stopPropagation
             L.DomEvent.on @_textDomEl, 'mousewheel', L.DomEvent.stopPropagation
           else
             L.DomEvent.on @_textDomEl, 'click', L.DomEvent.stopPropagation

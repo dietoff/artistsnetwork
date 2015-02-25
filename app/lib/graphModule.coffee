@@ -433,6 +433,7 @@ application.module 'GraphModule', (GraphModule, App, Backbone, Marionette, $, _)
                 )
               L.DomEvent.addListener @_leafletli, 'mouseover', (e) ->
                 $(this).css('cursor','pointer')
+                L.DomEvent.preventDefault(e)
                 e.stopPropagation()
                 # App.vent.trigger 'addNodes', d
                 # GraphModule.Controller.onArtist(d)

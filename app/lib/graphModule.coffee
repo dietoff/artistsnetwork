@@ -70,6 +70,7 @@ application.module 'GraphModule', (GraphModule, App, Backbone, Marionette, $, _)
   # Private Data And Functions
   # --------------------------
   myData = 'this is private data'
+  ifControl = false
 
   myFunction = ->
     return
@@ -140,8 +141,8 @@ application.module 'GraphModule', (GraphModule, App, Backbone, Marionette, $, _)
         _textDomEl = L.DomUtil.create('div', 'graph_up', @$el[0])
         _textDomEl.innerHTML += "<div class='graph'></div>"
         L.DomUtil.enableTextSelection(_textDomEl) 
-        L.DomEvent.disableClickPropagation(_textDomEl )
-        L.DomEvent.disableClickPropagation(L.DomUtil.get(_textDomEl))
+        # L.DomEvent.disableClickPropagation(_textDomEl )
+        # L.DomEvent.disableClickPropagation(L.DomUtil.get(_textDomEl))
 
         # L.DomEvent.disableClickPropagation(_textDomEl)
         _m.getPanes().overlayPane.appendChild(_textDomEl)
@@ -149,8 +150,8 @@ application.module 'GraphModule', (GraphModule, App, Backbone, Marionette, $, _)
         _textDomObj = $(L.DomUtil.get(_textDomEl))
         draggable = new L.Draggable(_textDomEl)
         draggable.disable()
-        L.DomEvent.disableClickPropagation(_textDomEl )
-        L.DomEvent.disableClickPropagation(_textDomObj )
+        # L.DomEvent.disableClickPropagation(_textDomEl )
+        # L.DomEvent.disableClickPropagation(_textDomObj )
         _textDomEl.onmousedown = _textDomEl.ondblclick = L.DomEvent.stop
         _textDomEl.firstChild.onmousedown = _textDomEl.firstChild.ondblclick = L.DomEvent.stop
         L.DomEvent.addListener _textDomEl, 'mouseover', ((e) ->
@@ -163,7 +164,7 @@ application.module 'GraphModule', (GraphModule, App, Backbone, Marionette, $, _)
         _textDomObj.css('background-color', 'none')
         _textDomObj.css('overflow', 'scroll')
         @el = @$el
-        L.DomEvent.disableClickPropagation(@$el )
+        # L.DomEvent.disableClickPropagation(@$el )
 
         # set the location of the force graph's elemetnt using leaflet
         # L.DomUtil.setPosition(L.DomUtil.get(_textDomEl), offset, $(_m.getContainer())[0].clientHeight - $(_m.getContainer())[0].clientHeight/0.98), disable3D=0) 
@@ -174,7 +175,7 @@ application.module 'GraphModule', (GraphModule, App, Backbone, Marionette, $, _)
         #  good example:  http://jsfiddle.net/bc4um7pc/
         _graphEl = $(L.DomUtil.get('graph'))
         _graphEl.onmousedown = L.DomEvent.stop
-        L.DomEvent.disableClickPropagation(_graphEl) 
+        # L.DomEvent.disableClickPropagation(_graphEl) 
         L.DomEvent.addListener _graphEl, 'click', (e) ->
             L.DomEvent.stopPropagation e
             return
@@ -229,9 +230,12 @@ application.module 'GraphModule', (GraphModule, App, Backbone, Marionette, $, _)
           ).property("id", (d, i) => 
             "linksource-#{d.source.index}"
           )  
-          link.attr('x1', (d) ->
+          link.attr('x1', (d) =>
             if (document.getElementById("line-#{d.source.index}")) and $("#line-#{d.source.index}").position().top < 700 and $("#line-#{d.source.index}").position().top > 15
-                $("#line-#{d.source.index}").position().left - offset.x/10
+                if this.ifControl 
+                  $("#line-#{d.source.index}").position().left + offset.x 
+                else
+                  $("#line-#{d.source.index}").position().left - offset.x/6
               # $("#line-#{value.id}").position().left
               # line = d3.select(document.getElementById("line-#{value.id}"))
         #       #   'translate(' + L.DomUtil.getViewportOffset(document.getElementById("line-#{value.id}")).x+ ',' + L.DomUtil.getViewportOffset(document.getElementById("line-#{value.id}")).y + ')'
@@ -295,7 +299,7 @@ application.module 'GraphModule', (GraphModule, App, Backbone, Marionette, $, _)
     @_m.setView([
               42.34
               0.12
-            ], 2)
+            ], 3)
     @_m.boxZoom.enable()
     @_m.scrollWheelZoom.disable()
     @_m.dragging.disable()
@@ -314,7 +318,131 @@ application.module 'GraphModule', (GraphModule, App, Backbone, Marionette, $, _)
 
   GraphModule.getAllArtists = ->
     return @_text
+
   GraphModule.makeControler = ($el, Width, Height, _margin, text, @_m)->
+      this.ifControl = true
+      L.DomUtil.removeClass(L.DomUtil.get("region-bios"), "col-md-2")
+      L.DomUtil.removeClass(L.DomUtil.get("map-region"), "col-md-10")
+      L.DomUtil.addClass(L.DomUtil.get("map-region"), "col-md-12")
+      textControl = L.Control.extend(
+        options:
+          position: "topleft"
+        onAdd: (map) =>
+          @_m = map  
+            # create the control container with a particular class name
+          text = []
+          @artistBios = []
+          if @_nodes
+            for key, value of @_nodes            
+              text.push {name: value.name, id: value.index, group: value.group}
+          # else
+          #   text = GraphModule.getAllNodes()
+          @_text = text
+          @_textDomEl = L.DomUtil.create('div', 'container paratext-info')
+          @_el = L.DomUtil.create('svg', 'svg')
+          @_m.getPanes().overlayPane.appendChild(@_el)
+          # @_textDomEl_innerdiv = L.DomUtil.create('div', 'container paratext-info', 'container paratext-info')
+          L.DomUtil.enableTextSelection(@_textDomEl)  
+          @_m.getPanes().overlayPane.appendChild(@_textDomEl)
+          @_textDomObj = $(L.DomUtil.get(@_textDomEl))
+          @_textDomObj.css('width', $(@_m.getContainer())[0].clientWidth/5)
+          @_textDomObj.css('height', $(@_m.getContainer())[0].clientHeight)
+          @_textDomObj.css('background-color', 'white')
+          @_textDomObj.css('overflow', 'scroll')
+          L.DomUtil.setOpacity(L.DomUtil.get(@_textDomEl), .8)
+          # here it needs to check to see if there is any vewSet avalable if not it should get it from the lates instance or somethign
+          @_viewSet = @_m.getCenter() if @_viewSet is undefined
+          L.DomUtil.setPosition(L.DomUtil.get(@_textDomEl), L.point(40, -65), disable3D=0)
+          @_d3text = d3.select(".paratext-info")
+          .append("ul").style("list-style-type", "none").style("padding-left", "0px")
+          .attr("width", $(@_m.getContainer())[0].clientWidth/5 )
+          .attr("height", $(@_m.getContainer())[0].clientHeight-80)
+          @_d3li = @_d3text
+          .selectAll("li")
+          .data(text)
+          .enter()
+          .append("li")
+          @_d3li.style("font-family", "Helvetica")
+          .style("line-height", "2")
+          .style("border", "0px solid gray")
+          .style("margin-top", "20px")
+          .style("padding-right", "20px")
+          .style("padding-left", "40px")
+          .attr("id", (d, i) =>
+            @artistBios.push {'name' :d.name, 'id': i}
+            # id = id + 1
+            return "line-#{i}" 
+          ).on("mouseover", (d,i) ->
+            GraphModule.Controller.highlightLinksBy(d)
+            GraphModule.Controller.highlightNodesBy(d)
+            $(this).css('cursor','pointer')
+            d3.select(this).transition().duration(0).style("color", "black").style("background-color", "rgb(208,208,208) ").style "opacity", 1
+            # L.DomEvent.disableClickPropagation(this) 
+            # L.DomEvent.disableClickPropagation($("#graph_up")) 
+            return 
+          ).on("mouseout", (d,i) ->
+            GraphModule.Controller.resetHighlightLinksBy()
+            GraphModule.Controller.resetHighlightNodesBy()
+            d3.select(this).transition().duration(1000).style("color", "rgb(72,72,72)").style("background-color", "white").style "opacity", 1
+            # L.DomEvent.disableClickPropagation(this) 
+            
+            return
+          ).append("text").text((d,i) =>
+            if d.group isnt 1
+              @_leafletli = L.DomUtil.get("line-#{i}")
+              timeout = undefined
+              L.DomEvent.addListener @_leafletli, 'click', (e) ->
+                e.stopPropagation()
+              L.DomEvent.addListener @_leafletli, 'mouseout', (e) =>
+                timeout = 0
+                
+                @force.resume()
+                setTimeout (->
+                  $(L.DomUtil.get(_this._domEl)).animate
+                    opacity: 0
+                  , 100, ->
+
+                  return
+
+                # Animation complete.
+                )
+              L.DomEvent.addListener @_leafletli, 'mouseover', (e) ->
+                $(this).css('cursor','pointer')
+                e.stopPropagation()
+                # App.vent.trigger 'addNodes', d
+                # GraphModule.Controller.onArtist(d)
+                # linkedTo = App.vent.trigger 'getLinksBy', d
+
+                timeout = setTimeout(->
+                  _this.force.stop()
+                  _this._m._initPathRoot()
+                  if timeout isnt 0 
+                    timeout = 0
+                , 900)
+                return 
+              , ->
+                return
+              d.name
+          ).style("font-size", "14px"
+          ).style("color", "rgb(72,72,72)" 
+          ).transition().duration(1).delay(1).style("opacity", 1)
+          # @_m.whenReady =>
+          #   @_m.setView([
+          #     42.34
+          #     -71.12
+          #   ], 13)
+          @_textDomEl
+        onSetView: (map) =>
+          @_m = map
+
+
+      )
+      div = new textControl()
+      @_m.addControl div
+      return @_m
+
+
+  GraphModule.makeDivList = ($el, Width, Height, _margin, text, @_m)->
         id = 0
         @artistBios = []
         for bios in text
@@ -395,7 +523,7 @@ application.module 'GraphModule', (GraphModule, App, Backbone, Marionette, $, _)
             L.DomEvent.addListener @_leafletli, 'mouseout', (e) =>
               timeout = 0
               
-              # @force.start()
+              @force.resume()
               setTimeout (->
                 $(L.DomUtil.get(_this._domEl)).animate
                   opacity: 0
@@ -413,7 +541,7 @@ application.module 'GraphModule', (GraphModule, App, Backbone, Marionette, $, _)
               # linkedTo = App.vent.trigger 'getLinksBy', d
 
               timeout = setTimeout(->
-                # _this.force.stop()
+                _this.force.stop()
                 _this._m._initPathRoot()
                 if timeout isnt 0 
                   timeout = 0

@@ -1,6 +1,5 @@
 require 'lib/view_helper'
 
-
 class Application extends Backbone.Marionette.Application
     initialize: =>
          
@@ -28,7 +27,8 @@ class Application extends Backbone.Marionette.Application
 
         @addInitializer((options) =>
             # Instantiate the router
-            Router = require 'lib/router'
+
+            Router = require 'lib/router'            
             @vent = new Backbone.Wreqr.EventAggregator()
             @vent.on 'addNodes', (d) ->
                 Backbone.history.navigate "graph/#{d.name}", trigger: true 

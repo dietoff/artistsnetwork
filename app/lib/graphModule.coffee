@@ -320,7 +320,7 @@ application.module 'GraphModule', (GraphModule, App, Backbone, Marionette, $, _)
             ], 3)
     @_m.boxZoom.enable()
     @_m.scrollWheelZoom.disable()
-    @_m.dragging.disable()
+    # @_m.dragging.disable()
     @_m.on 'zoomstart dragstart', =>
       @force.stop()
     @_m.on 'zoomend dragend', =>
@@ -411,6 +411,8 @@ application.module 'GraphModule', (GraphModule, App, Backbone, Marionette, $, _)
               @_leafletli = L.DomUtil.get("line-#{i}")
               timeout = undefined
               L.DomEvent.addListener @_leafletli, 'click', (e) ->
+                if this.getEvents
+                  map.on
                 GraphModule.Controller.resetHighlightLinksBy()
                 GraphModule.Controller.resetHighlightNodesBy()
                 GraphModule.Controller.highlightLinksBy(d)

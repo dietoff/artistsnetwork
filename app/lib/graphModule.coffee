@@ -320,7 +320,7 @@ application.module 'GraphModule', (GraphModule, App, Backbone, Marionette, $, _)
             ], 3)
     @_m.boxZoom.enable()
     @_m.scrollWheelZoom.disable()
-    # @_m.dragging.disable()
+    @_m.dragging.disable()
     @_m.on 'zoomstart dragstart', =>
       @force.stop()
     @_m.on 'zoomend dragend', =>

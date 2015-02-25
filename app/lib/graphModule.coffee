@@ -392,16 +392,12 @@ application.module 'GraphModule', (GraphModule, App, Backbone, Marionette, $, _)
             # id = id + 1
             return "line-#{i}" 
           ).on("mouseover", (d,i) ->
-            GraphModule.Controller.highlightLinksBy(d)
-            GraphModule.Controller.highlightNodesBy(d)
             $(this).css('cursor','pointer')
             d3.select(this).transition().duration(0).style("color", "black").style("background-color", "rgb(208,208,208) ").style "opacity", 1
             # L.DomEvent.disableClickPropagation(this) 
             # L.DomEvent.disableClickPropagation($("#graph_up")) 
             return 
           ).on("mouseout", (d,i) ->
-            GraphModule.Controller.resetHighlightLinksBy()
-            GraphModule.Controller.resetHighlightNodesBy()
             d3.select(this).transition().duration(1000).style("color", "rgb(72,72,72)").style("background-color", "white").style "opacity", 1
             # L.DomEvent.disableClickPropagation(this) 
             
@@ -414,7 +410,8 @@ application.module 'GraphModule', (GraphModule, App, Backbone, Marionette, $, _)
               #   e.stopPropagation()
               L.DomEvent.addListener @_leafletli, 'mouseout', (e) =>
                 timeout = 0
-                
+                GraphModule.Controller.resetHighlightLinksBy()
+                GraphModule.Controller.resetHighlightNodesBy()
                 @force.resume()
                 setTimeout (->
                   $(L.DomUtil.get(_this._domEl)).animate
@@ -427,6 +424,8 @@ application.module 'GraphModule', (GraphModule, App, Backbone, Marionette, $, _)
                 )
               L.DomEvent.addListener @_leafletli, 'mouseover', (e) ->
                 $(this).css('cursor','pointer')
+                GraphModule.Controller.highlightLinksBy(d)
+                GraphModule.Controller.highlightNodesBy(d)
                 e.stopPropagation()
                 # App.vent.trigger 'addNodes', d
                 # GraphModule.Controller.onArtist(d)

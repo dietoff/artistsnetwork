@@ -7,21 +7,32 @@ application.module 'GraphModule', (GraphModule, App, Backbone, Marionette, $, _)
 
       highlightLinksBy: (sourceNode) =>
         console.log "the node to hifhlofhtr by", sourceNode
-        # by_id = document.getElementById("linksource-#{each.index}")
-        # console.log "each index", "linksource-#{each.index}"
         @vis.selectAll("line").filter((d, i) ->
           d.source.name == sourceNode.name
-        ).style("opacity", 0.9)
-        # console.log "d", d
-        # console.log GraphModule._links
-        # for each in GraphModule._links
-
-        #   if each.source.name == source.name
-        #     _return_list.push each.target
-        return 
+        ).transition().duration(200).style("opacity", 0.9)
+        return
 
       resetHighlightLinksBy: =>
         @vis.selectAll("line").style("opacity", 0.2)
+
+      highlightNodesBy: (sourceNode) =>
+        @_links.forEach (link) => 
+            if link.source.name == sourceNode.name
+              # console.log @vis.selectAll("circle")
+              @vis.selectAll("circle").filter((d, i) =>
+                d.name == link.target.name
+              ).transition().duration(200
+              ).style("opacity", 0.9
+              ).attr("r", 5
+              ).style("stroke-width", 2
+              ).text( (d) =>
+                return d.name
+              )
+              return 
+            return
+        return
+      resetHighlightNodesBy: =>
+        @vis.selectAll("circle").style("opacity", 0.6).attr("r", 3).style("stroke-width", 1)
 
       # write methods
       # # getAllNodes
@@ -31,6 +42,8 @@ application.module 'GraphModule', (GraphModule, App, Backbone, Marionette, $, _)
     appRoutes:
       "highlightLinksBy" : "highlightLinksBy"
       "resetHighlightLinksBy" : "resetHighlightLinksBy"
+      "highlightNodesBy" : "highlightNodesBy"
+      "resetHighlightNodesBy" : "resetHighlightNodesBy"
 
   API = 
 
@@ -41,8 +54,13 @@ application.module 'GraphModule', (GraphModule, App, Backbone, Marionette, $, _)
       GraphModule.Controller.highlightLinksBy(d)
 
     resetHighlightLinksBy: () ->
-      GraphModule.Controller.resetHighlightLinksBy(d)      
+      GraphModule.Controller.resetHighlightLinksBy(d)   
 
+    highlightNodesBy: (d) ->
+      GraphModule.Controller.highlightNodesBy(d)  
+
+    resetHighlightNodesBy: -> 
+      GraphModule.Controller.resetHighlightNodesBy()
 
   App.addInitializer ->
     new GraphModule.Router
@@ -188,7 +206,7 @@ application.module 'GraphModule', (GraphModule, App, Backbone, Marionette, $, _)
         )
         _artistNodes = @_nodes
         nodeEnter = node.enter().append('g').attr('class', 'node').call(@force.drag)
-        nodeEnter.append('circle').property("id", (d, i) => "node-#{i}").attr('r', 4).style("opacity", 0.8).style('fill', (d) =>
+        nodeEnter.append('circle').property("id", (d, i) => "node-#{i}").attr('r', 3).style("opacity", 0.6).style('fill', (d) =>
           if d.group
             return "none"# color(d.group)
           else
@@ -362,11 +380,13 @@ application.module 'GraphModule', (GraphModule, App, Backbone, Marionette, $, _)
           # L.DomEvent.disableClickPropagation(this) 
           # L.DomEvent.disableClickPropagation($("#graph_up")) 
           GraphModule.Controller.highlightLinksBy(d)
+          GraphModule.Controller.highlightNodesBy(d)
           return 
         ).on("mouseout", (d,i) ->
           d3.select(this).transition().duration(1000).style("color", "rgb(72,72,72)").style("background-color", "white").style "opacity", 1
           # L.DomEvent.disableClickPropagation(this) 
           GraphModule.Controller.resetHighlightLinksBy()
+          GraphModule.Controller.resetHighlightNodesBy()
           return
         ).append("text").text((d,i) =>
           console.log d
@@ -377,7 +397,7 @@ application.module 'GraphModule', (GraphModule, App, Backbone, Marionette, $, _)
               e.stopPropagation()
             L.DomEvent.addListener @_leafletli, 'mouseout', (e) =>
               timeout = 0
-              # GraphModule.Controller.offArtist(d)
+              GraphModule.Controller.resetHighlightNodesBy(d)
               @force.start()
               setTimeout (->
                 $(L.DomUtil.get(_this._domEl)).animate

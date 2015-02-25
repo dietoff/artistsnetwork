@@ -465,6 +465,17 @@ application.module 'GraphModule', (GraphModule, App, Backbone, Marionette, $, _)
 
       )
       div = new textControl()
+      # div.getContainer().addEventListener 'mouseover', ->
+      #   map.dragging.disable()
+      #   return
+      # div.getContainer().addEventListener 'mouseout', ->
+      #   map.dragging.enable()
+      #   return
+      if !L.Browser.touch
+        L.DomEvent.disableClickPropagation div
+        L.DomEvent.on div, 'mousewheel', L.DomEvent.stopPropagation
+      else
+        L.DomEvent.on div, 'click', L.DomEvent.stopPropagation
       @_m.addControl div
       return @_m
 

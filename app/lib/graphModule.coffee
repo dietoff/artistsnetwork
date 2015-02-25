@@ -350,6 +350,7 @@ application.module 'GraphModule', (GraphModule, App, Backbone, Marionette, $, _)
         @_textDomObj.css('background-color', 'none')
         @_textDomObj.css('overflow', 'scroll')
         L.DomUtil.setOpacity(L.DomUtil.get(@_textDomEl), .8)
+
         # here it needs to check to see if there is any vewSet avalable if not it should get it from the lates instance or somethign
         @_viewSet = @_m.getCenter() if @_viewSet is undefined
         @_d3text = d3.select(".paratext-info")
@@ -411,7 +412,7 @@ application.module 'GraphModule', (GraphModule, App, Backbone, Marionette, $, _)
             L.DomEvent.addListener @_leafletli, 'mouseover', (e) ->
               $(this).css('cursor','pointer')
               # e.stopPropagation()
-              App.vent.trigger 'addNodes', d
+              # App.vent.trigger 'addNodes', d
               # GraphModule.Controller.onArtist(d)
               # linkedTo = App.vent.trigger 'getLinksBy', d
 

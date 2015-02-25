@@ -396,7 +396,7 @@ application.module 'GraphModule', (GraphModule, App, Backbone, Marionette, $, _)
             GraphModule.Controller.highlightNodesBy(d)
             $(this).css('cursor','pointer')
             d3.select(this).transition().duration(0).style("color", "black").style("background-color", "rgb(208,208,208) ").style "opacity", 1
-            # L.DomEvent.disableClickPropagation(this) 
+            L.DomEvent.disableClickPropagation(this) 
             # L.DomEvent.disableClickPropagation($("#graph_up")) 
             return 
           ).on("mouseout", (d,i) ->

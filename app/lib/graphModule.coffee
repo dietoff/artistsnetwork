@@ -4,8 +4,35 @@ application = require('application')
 application.module 'GraphModule', (GraphModule, App, Backbone, Marionette, $, _) ->
   @startWithParent = false
   GraphModule.Controller =
-      makeMap: ->
-      offArtist: (d)->
+
+      highlightLinksBy: (sourceNode) =>
+        console.log "the node to hifhlofhtr by", sourceNode
+        @vis.selectAll("line").filter((d, i) ->
+          d.source.name == sourceNode.name
+        ).transition().duration(200).style("opacity", 0.9)
+        return
+
+      resetHighlightLinksBy: =>
+        @vis.selectAll("line").style("opacity", 0.2)
+
+      highlightNodesBy: (sourceNode) =>
+        @_links.forEach (link) => 
+            if link.source.name == sourceNode.name
+              # console.log @vis.selectAll("circle")
+              @vis.selectAll("circle").filter((d, i) =>
+                d.name == link.target.name
+              ).transition().duration(200
+              ).style("opacity", 0.9
+              ).attr("r", 5
+              ).style("stroke-width", 2
+              ).text( (d) =>
+                return d.name
+              )
+              return 
+            return
+        return
+      resetHighlightNodesBy: =>
+        @vis.selectAll("circle").style("opacity", 0.6).attr("r", 3).style("stroke-width", 1)
 
       # write methods
       # # getAllNodes
@@ -13,16 +40,27 @@ application.module 'GraphModule', (GraphModule, App, Backbone, Marionette, $, _)
 
   class GraphModule.Router extends Marionette.AppRouter
     appRoutes:
-      "map" : "map"
+      "highlightLinksBy" : "highlightLinksBy"
+      "resetHighlightLinksBy" : "resetHighlightLinksBy"
+      "highlightNodesBy" : "highlightNodesBy"
+      "resetHighlightNodesBy" : "resetHighlightNodesBy"
 
   API = 
 
     map: () ->
       GraphModule.Controller.makeMap() 
 
-    offArtist: (d) ->
-      GraphModule.Controller.offArtist(d)
+    highlightLinksBy: (d) ->
+      GraphModule.Controller.highlightLinksBy(d)
 
+    resetHighlightLinksBy: () ->
+      GraphModule.Controller.resetHighlightLinksBy(d)   
+
+    highlightNodesBy: (d) ->
+      GraphModule.Controller.highlightNodesBy(d)  
+
+    resetHighlightNodesBy: -> 
+      GraphModule.Controller.resetHighlightNodesBy()
 
   App.addInitializer ->
     new GraphModule.Router
@@ -42,17 +80,32 @@ application.module 'GraphModule', (GraphModule, App, Backbone, Marionette, $, _)
   # -------------------------
   GraphModule.someData = 'public data'
 
+  GraphModule.connectBios = (_m, d, i) ->
+    points = []
+    # points.push _m.layerPointToLatLng(_m.latLngToLayerPoint(L.latLng(d.lat, d.long)))
+    # points.push _m.layerPointToLatLng(_m.containerPointToLayerPoint([L.DomUtil.getViewportOffset(document.getElementById("line-#{i}")).x + 30 + $(_m.getContainer())[0].clientWidth/3, L.DomUtil.getViewportOffset(document.getElementById("line-#{i}")).y]))
+  GraphModule.getAllNodes = ->
+    artistNodes = []
+    d3.json 'http://localhost:3001/artists', (error, nodes) =>
+      id = 0
+      for artist in nodes
+        # make a list of artist names when data arrives and keep it
+        artistNodes.push {'name' :artist.source, 'id': id, 'group': artist.group}
+        id = id + 1
+      @artistNodes = artistNodes
+    return @artistNodes
+
   GraphModule.makeGraph = ->
     @$el = $('graph-map')
-    @artistNodes = []
     d3.json 'http://localhost:3001/artists', (error, nodes) =>
         id = 0
+        @artistNodes = [] 
         for artist in nodes
           # make a list of artist names when data arrives and keep it
           @artistNodes.push {'name' :artist.source, 'id': id, 'group': artist.group}
           id = id + 1
-        
         # using the data to create links and nodes in format
+  
         _links = nodes
         # sort links by source, then target
         _links.sort (a, b) ->
@@ -84,6 +137,8 @@ application.module 'GraphModule', (GraphModule, App, Backbone, Marionette, $, _)
 
           return
         _m = @getMap()
+        @_nodes = _nodes
+        @_links = _links
         _textDomEl = L.DomUtil.create('div', 'graph_up', @$el[0])
         _textDomEl.innerHTML += "<div class='graph'></div>"
         L.DomUtil.enableTextSelection(_textDomEl) 
@@ -92,7 +147,6 @@ application.module 'GraphModule', (GraphModule, App, Backbone, Marionette, $, _)
 
         # L.DomEvent.disableClickPropagation(_textDomEl)
         _m.getPanes().overlayPane.appendChild(_textDomEl)
-        console.log "offset", L.DomUtil.getViewportOffset _textDomEl
         offset = L.DomUtil.getViewportOffset _textDomEl
         _textDomObj = $(L.DomUtil.get(_textDomEl))
         draggable = new L.Draggable(_textDomEl)
@@ -143,47 +197,78 @@ application.module 'GraphModule', (GraphModule, App, Backbone, Marionette, $, _)
         @nodes = @force.nodes(d3.values(_nodes))
         links = @force.links()
         link = @vis.selectAll('.link').data(_links)
-        link.enter().insert("line", ".node").attr("class", "link").style("opacity", 0.6)
+        link.enter().insert("line", ".node").attr("class", "link").style("opacity", 0.2)
         link.exit().remove()
         
         node = @vis.selectAll('g.node'
         ).data(d3.values(_nodes), (d) ->
           d.name
         )
+        _artistNodes = @_nodes
         nodeEnter = node.enter().append('g').attr('class', 'node').call(@force.drag)
-        nodeEnter.append('circle').property("id", (d, i) => "node-#{i}").attr('r', 4).style("opacity", 0.8).style('fill', (d) =>
+        nodeEnter.append('circle').property("id", (d, i) => "node-#{i}").attr('r', 3).style("opacity", 0.6).style('fill', (d) =>
           if d.group
             return "none"# color(d.group)
           else
-            return "black"
+            return "white"
         ).attr('x', '-1px').attr('y', '-1px').attr('width', '4px').attr 'height', '4px'
         nodeEnter.append('text').attr('class', 'nodetext').attr('dx', 12).attr('dy', '.35em').attr('id', (d,i) ->
           return i
-        ).text (d) ->
-          if d.group isnt 1
-            return d.name# color(d.group)
+        )#.text (d) ->
+          #if d.group is 1
+           # return d.name# color(d.group)
         node.exit().remove()
 
+
+        # .attr("x", ->
+        #   return d3.transform(d3.select(@).attr("transform")).translate[0])
         @force.on 'tick', =>
+          link.attr('stroke', (d) ->
+            if (document.getElementById("line-#{d.source.index}")) and $("#line-#{d.source.index}").position().top < 700 and $("#line-#{d.source.index}").position().top > 40
+              return "#000"
+            else
+              return "none"
+          ).property("id", (d, i) => 
+            # console.log "link_d", d
+            "linksource-#{d.source.index}"
+          )  
           link.attr('x1', (d) ->
-            d.source.x
+            if (document.getElementById("line-#{d.source.index}")) and $("#line-#{d.source.index}").position().top < 700 and $("#line-#{d.source.index}").position().top > 40
+                $("#line-#{d.source.index}").position().left - offset.x/10
+              # $("#line-#{value.id}").position().left
+              # line = d3.select(document.getElementById("line-#{value.id}"))
+        #       #   'translate(' + L.DomUtil.getViewportOffset(document.getElementById("line-#{value.id}")).x+ ',' + L.DomUtil.getViewportOffset(document.getElementById("line-#{value.id}")).y + ')'
+            else
+              # d.source.x
           ).attr('y1', (d) ->
-            d.source.y
+            if (document.getElementById("line-#{d.source.index}")) and $("#line-#{d.source.index}").position().top < 700 and $("#line-#{d.source.index}").position().top > 40
+                $("#line-#{d.source.index}").position().top + 2 + (3 * offset.y) 
+            else
+              # d.source.y
           ).attr('x2', (d) ->
-            if d.target.long
+            if d.target.long and (document.getElementById("line-#{d.source.index}")) and $("#line-#{d.source.index}").position().top < 700 and $("#line-#{d.source.index}").position().top > 40
               _m.latLngToLayerPoint(L.latLng(d.target.long, d.target.lat)).x
             else
               d.target.x
           ).attr 'y2', (d) ->
-            if d.target.long
+            if d.target.long and (document.getElementById("line-#{d.source.index}")) and $("#line-#{d.source.index}").position().top < 700 and $("#line-#{d.source.index}").position().top > 40
               _m.latLngToLayerPoint(L.latLng(d.target.long, d.target.lat)).y
             else
               d.target.y
           node.attr('transform', (d) ->
+            # console.log d
             if d.lat
               'translate(' + _m.latLngToLayerPoint(L.latLng(d.long, d.lat)).x + ',' + _m.latLngToLayerPoint(L.latLng(d.long, d.lat)).y + ')'
             else
-              'translate(' + d.x + ',' + d.y + ')'
+                if (document.getElementById("line-#{d.index}"))
+                    x_pos = $("#line-#{d.index}").position().left - offset.x/6
+                    y_pos = $("#line-#{d.index}").position().top - offset.y
+                    'translate(' + x_pos +  ',' + y_pos  + ')'
+                  # $("#line-#{value.id}").position().left
+                  # line = d3.select(document.getElementById("line-#{value.id}"))
+            #       #   'translate(' + L.DomUtil.getViewportOffset(document.getElementById("line-#{value.id}")).x+ ',' + L.DomUtil.getViewportOffset(document.getElementById("line-#{value.id}")).y + ')'
+                else
+                  'translate(' + d.x + ',' + d.y + ')'
           )
           return
         
@@ -191,7 +276,6 @@ application.module 'GraphModule', (GraphModule, App, Backbone, Marionette, $, _)
         #   @force.tick()
 
         @force.start()
-
         L.DomUtil.addClass(_textDomEl, "leaflet-control-container")
         L.DomUtil.removeClass(_textDomEl, "graph_up")
     return
@@ -200,7 +284,8 @@ application.module 'GraphModule', (GraphModule, App, Backbone, Marionette, $, _)
   GraphModule.makeMap = ->
     map = $("#map-region").append("<div id='map'></div>")
     L.mapbox.accessToken = "pk.eyJ1IjoiYXJtaW5hdm4iLCJhIjoiSTFteE9EOCJ9.iDzgmNaITa0-q-H_jw1lJw"
-    @_m = L.mapbox.map("map", "arminavn.l5loig7e",
+    @_m = L.mapbox.map("map", "arminavn.l5loig7e
+      ",
         zoomAnimation: true
         attributionControl: false
         zoomAnimationThreshold: 4
@@ -221,7 +306,6 @@ application.module 'GraphModule', (GraphModule, App, Backbone, Marionette, $, _)
     @_m.on 'zoomstart dragstart', =>
       @force.stop()
     @_m.on 'zoomend dragend', =>
-      console.log @force
       @force.start()
     return
 
@@ -233,8 +317,21 @@ application.module 'GraphModule', (GraphModule, App, Backbone, Marionette, $, _)
     return map
 
   GraphModule.getAllArtists = ->
-    return @artistNodes
+    return @_text
   GraphModule.makeControler = ($el, Width, Height, _margin, text, @_m)->
+        id = 0
+        @artistBios = []
+        for bios in text
+          # make a list of artist names when data arrives and keep it
+          # @artistNodes.push {'name' :artist.source, 'id': id, 'group': artist.group}
+          id = id + 1
+        text = []
+        if @_nodes
+          for key, value of @_nodes            
+            text.push {name: value.name, id: value.index, group: value.group}
+        # else
+        #   text = GraphModule.getAllNodes()
+        @_text = text
         @_m = GraphModule.getMap()  
         # create the control container with a particular class name
 
@@ -250,13 +347,16 @@ application.module 'GraphModule', (GraphModule, App, Backbone, Marionette, $, _)
         @_textDomObj = $(L.DomUtil.get(@_textDomEl))
         @_textDomObj.css('width', $(@_m.getContainer())[0].clientWidth/5)
         @_textDomObj.css('height', $(@_m.getContainer())[0].clientHeight)
-        @_textDomObj.css('background-color', 'white')
+        @_textDomObj.css('background-color', 'none')
         @_textDomObj.css('overflow', 'scroll')
         L.DomUtil.setOpacity(L.DomUtil.get(@_textDomEl), .8)
         # here it needs to check to see if there is any vewSet avalable if not it should get it from the lates instance or somethign
         @_viewSet = @_m.getCenter() if @_viewSet is undefined
         @_d3text = d3.select(".paratext-info")
-        .append("ul").style("list-style-type", "none").style("padding-left", "0px")
+        .append("ul"
+        ).style("list-style-type", "none"
+        ).style("padding-left", "0px"
+        ).attr("id", "bios-list")
         .attr("width", $(@_m.getContainer())[0].clientWidth/5 )
         .attr("height", $(@_m.getContainer())[0].clientHeight-80)
         @_d3li = @_d3text
@@ -271,56 +371,63 @@ application.module 'GraphModule', (GraphModule, App, Backbone, Marionette, $, _)
         .style("padding-right", "20px")
         .style("padding-left", "40px")
         .attr("id", (d, i) =>
-           "line-#{i}" 
-          )
-        .text((d,i) =>
-          @_leafletli = L.DomUtil.get("line-#{i}")
-          timeout = undefined
-          L.DomEvent.addListener @_leafletli, 'click', (e) ->
-            e.stopPropagation()
-          L.DomEvent.addListener @_leafletli, 'mouseout', (e) =>
-            timeout = 0
-            GraphModule.Controller.offArtist(d)
-            @force.start()
-            setTimeout (->
-              $(L.DomUtil.get(_this._domEl)).animate
-                opacity: 0
-              , 100, ->
-
-              return
-
-            # Animation complete.
-            )
-          L.DomEvent.addListener @_leafletli, 'mouseover', (e) ->
-            $(this).css('cursor','pointer')
-            # e.stopPropagation()
-            App.vent.trigger 'addNodes', d
-            
-            timeout = setTimeout(->
-              _this._m._initPathRoot()
-              if timeout isnt 0 
-                @force.stop()
-                timeout = 0
-            , 900)
-            return 
-          , ->
-            return
-          d.Name
-        )
-        .style("font-size", "14px")
-        .style("color", "rgb(72,72,72)" )
-        .on("mouseover", (d,i) ->
+            @artistBios.push {'name' :d.name, 'id': i}
+            # id = id + 1
+            return "line-#{i}" 
+        ).on("mouseover", (d,i) ->
           $(this).css('cursor','pointer')
           d3.select(this).transition().duration(0).style("color", "black").style("background-color", "rgb(208,208,208) ").style "opacity", 1
-          L.DomEvent.disableClickPropagation(this) 
-          L.DomEvent.disableClickPropagation($("#graph_up")) 
+          # L.DomEvent.disableClickPropagation(this) 
+          # L.DomEvent.disableClickPropagation($("#graph_up")) 
+          GraphModule.Controller.highlightLinksBy(d)
+          GraphModule.Controller.highlightNodesBy(d)
           return 
         ).on("mouseout", (d,i) ->
           d3.select(this).transition().duration(1000).style("color", "rgb(72,72,72)").style("background-color", "white").style "opacity", 1
-          L.DomEvent.disableClickPropagation(this) 
+          # L.DomEvent.disableClickPropagation(this) 
+          GraphModule.Controller.resetHighlightLinksBy()
+          GraphModule.Controller.resetHighlightNodesBy()
           return
-        )  
-        .transition().duration(1).delay(1).style("opacity", 1)
+        ).append("text").text((d,i) =>
+          console.log d
+          if d.group isnt 1
+            @_leafletli = L.DomUtil.get("line-#{i}")
+            timeout = undefined
+            L.DomEvent.addListener @_leafletli, 'click', (e) ->
+              e.stopPropagation()
+            L.DomEvent.addListener @_leafletli, 'mouseout', (e) =>
+              timeout = 0
+              GraphModule.Controller.resetHighlightNodesBy(d)
+              @force.start()
+              setTimeout (->
+                $(L.DomUtil.get(_this._domEl)).animate
+                  opacity: 0
+                , 100, ->
+
+                return
+
+              # Animation complete.
+              )
+            L.DomEvent.addListener @_leafletli, 'mouseover', (e) ->
+              $(this).css('cursor','pointer')
+              # e.stopPropagation()
+              App.vent.trigger 'addNodes', d
+              # GraphModule.Controller.onArtist(d)
+              # linkedTo = App.vent.trigger 'getLinksBy', d
+
+              timeout = setTimeout(->
+                _this._m._initPathRoot()
+                if timeout isnt 0 
+                  _this.force.stop()
+                  timeout = 0
+              , 900)
+              return 
+            , ->
+              return
+            d.name
+        ).style("font-size", "14px"
+        ).style("color", "rgb(72,72,72)" 
+        ).transition().duration(1).delay(1).style("opacity", 1)
     return @_textDomEl
 
   return

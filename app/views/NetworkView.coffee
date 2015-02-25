@@ -25,8 +25,9 @@ module.exports = class NetworkView extends Backbone.Marionette.LayoutView
 		# @regionManager.addRegions @regions
 		
 		@biosView = new BiosView()
-		@graphView = new GraphView()
 		@regionBios.show(@biosView)
+		@graphView = new GraphView()
+		
 		@regionGraph.show(@graphView)
 
 

@@ -31,7 +31,9 @@ class Application extends Backbone.Marionette.Application
             Router = require 'lib/router'
             @vent = new Backbone.Wreqr.EventAggregator()
             @vent.on 'addNodes', (d) ->
-                Backbone.history.navigate "graph/#{d.Name}", trigger: true 
+                Backbone.history.navigate "graph/#{d.name}", trigger: true 
+            @vent.on 'getLinksBy', (d) =>
+                @GraphModule.Controller.getLinksBy(d)
             @router = new Router()
         )
 

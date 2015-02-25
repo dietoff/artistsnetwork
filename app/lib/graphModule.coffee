@@ -30,7 +30,12 @@ application.module 'GraphModule', (GraphModule, App, Backbone, Marionette, $, _)
             return
         return
       resetHighlightNodesBy: =>
-        @vis.selectAll("circle").style("opacity", 0.6).attr("r", 3).style("stroke-width", 1)
+        @vis.selectAll("circle").style("opacity", 0.6).attr("r", (d) ->
+          if d.group
+            return 3
+          else 
+            return 0
+        ).style("stroke-width", 1)
 
       # write methods
       # # getAllNodes
@@ -71,7 +76,7 @@ application.module 'GraphModule', (GraphModule, App, Backbone, Marionette, $, _)
   # --------------------------
   myData = 'this is private data'
   ifControl = false
-
+  inWidth = 60
   myFunction = ->
     return
 
@@ -205,11 +210,16 @@ application.module 'GraphModule', (GraphModule, App, Backbone, Marionette, $, _)
         )
         _artistNodes = @_nodes
         nodeEnter = node.enter().append('g').attr('class', 'node').call(@force.drag)
-        nodeEnter.append('circle').property("id", (d, i) => "node-#{i}").attr('r', 3).style("opacity", 0.6).style('fill', (d) =>
+        nodeEnter.append('circle').property("id", (d, i) => "node-#{i}").attr('r', (d) ->
+          if d.group
+            return 3
+          else
+            return 0
+        ).style("opacity", 0.6).style('fill', (d) =>
           if d.group
             return "none"# color(d.group)
           else
-            return "white"
+            return "node"
         ).attr('x', '-1px').attr('y', '-1px').attr('width', '4px').attr 'height', '4px'
         nodeEnter.append('text').attr('class', 'nodetext').attr('dx', 12).attr('dy', '.35em').attr('id', (d,i) ->
           return i
@@ -233,7 +243,7 @@ application.module 'GraphModule', (GraphModule, App, Backbone, Marionette, $, _)
           link.attr('x1', (d) =>
             if (document.getElementById("line-#{d.source.index}")) and $("#line-#{d.source.index}").position().top < 700 and $("#line-#{d.source.index}").position().top > 15
                 if this.ifControl 
-                  $("#line-#{d.source.index}").position().left + offset.x 
+                  $("#line-#{d.source.index}").position().left + @inWidth
                 else
                   $("#line-#{d.source.index}").position().left - offset.x/6
               # $("#line-#{value.id}").position().left
@@ -241,8 +251,11 @@ application.module 'GraphModule', (GraphModule, App, Backbone, Marionette, $, _)
         #       #   'translate(' + L.DomUtil.getViewportOffset(document.getElementById("line-#{value.id}")).x+ ',' + L.DomUtil.getViewportOffset(document.getElementById("line-#{value.id}")).y + ')'
             else
               # d.source.x
-          ).attr('y1', (d) ->
+          ).attr('y1', (d) =>
             if (document.getElementById("line-#{d.source.index}")) and $("#line-#{d.source.index}").position().top < 700 and $("#line-#{d.source.index}").position().top > 15
+              if this.ifControl
+                $("#line-#{d.source.index}").position().top + offset.y + 80
+              else
                 $("#line-#{d.source.index}").position().top + 2 + (3 * offset.y) 
             else
               # d.source.y
@@ -256,13 +269,18 @@ application.module 'GraphModule', (GraphModule, App, Backbone, Marionette, $, _)
               _m.latLngToLayerPoint(L.latLng(d.target.long, d.target.lat)).y
             else
               d.target.y
-          node.attr('transform', (d) ->
+          node.attr('transform', (d) =>
             if d.lat
               'translate(' + _m.latLngToLayerPoint(L.latLng(d.long, d.lat)).x + ',' + _m.latLngToLayerPoint(L.latLng(d.long, d.lat)).y + ')'
             else
                 if (document.getElementById("line-#{d.index}"))
+                  if @ifControl
+                    x_pos = $("#line-#{d.index}").position().left + @inWidth
+                    y_pos = $("#line-#{d.index}").position().top + 80
+                    'translate(' + x_pos +  ',' + y_pos  + ')'
+                  else
                     x_pos = $("#line-#{d.index}").position().left - offset.x/6
-                    y_pos = $("#line-#{d.index}").position().top - offset.y
+                    y_pos = $("#line-#{d.index}").position().top + offset.y + 80
                     'translate(' + x_pos +  ',' + y_pos  + ')'
                   # $("#line-#{value.id}").position().left
                   # line = d3.select(document.getElementById("line-#{value.id}"))
@@ -345,14 +363,15 @@ application.module 'GraphModule', (GraphModule, App, Backbone, Marionette, $, _)
           L.DomUtil.enableTextSelection(@_textDomEl)  
           @_m.getPanes().overlayPane.appendChild(@_textDomEl)
           @_textDomObj = $(L.DomUtil.get(@_textDomEl))
+          @inWidth = $(@_m.getContainer())[0].clientWidth/5
           @_textDomObj.css('width', $(@_m.getContainer())[0].clientWidth/5)
           @_textDomObj.css('height', $(@_m.getContainer())[0].clientHeight)
           @_textDomObj.css('background-color', 'white')
           @_textDomObj.css('overflow', 'scroll')
           L.DomUtil.setOpacity(L.DomUtil.get(@_textDomEl), .8)
           # here it needs to check to see if there is any vewSet avalable if not it should get it from the lates instance or somethign
-          @_viewSet = @_m.getCenter() if @_viewSet is undefined
-          L.DomUtil.setPosition(L.DomUtil.get(@_textDomEl), L.point(40, -65), disable3D=0)
+          # @_viewSet = @_m.getCenter() if @_viewSet is undefined
+          # L.DomUtil.setPosition(L.DomUtil.get(@_textDomEl), L.point(40, -65), disable3D=0)
           @_d3text = d3.select(".paratext-info")
           .append("ul").style("list-style-type", "none").style("padding-left", "0px")
           .attr("width", $(@_m.getContainer())[0].clientWidth/5 )
@@ -431,6 +450,7 @@ application.module 'GraphModule', (GraphModule, App, Backbone, Marionette, $, _)
           #     42.34
           #     -71.12
           #   ], 13)
+          offset = L.DomUtil.getViewportOffset @_textDomEl
           @_textDomEl
         onSetView: (map) =>
           @_m = map
@@ -483,7 +503,7 @@ application.module 'GraphModule', (GraphModule, App, Backbone, Marionette, $, _)
         ).style("padding-left", "0px"
         ).attr("id", "bios-list")
         .attr("width", $(@_m.getContainer())[0].clientWidth/5 )
-        .attr("height", $(@_m.getContainer())[0].clientHeight-80)
+        .attr("height", $(@_m.getContainer())[0].clientHeight)
         @_d3li = @_d3text
         .selectAll("li")
         .data(text)

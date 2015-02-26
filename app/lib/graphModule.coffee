@@ -612,9 +612,10 @@ application.module 'GraphModule', (GraphModule, App, Backbone, Marionette, $, _)
                 if timeout isnt 0 
                   timeout = 0
               , 900)
+              _this.force.resume()
               return 
             , ->
-              _this.force.resume()
+
               return
             d.name
         ).style("font-size", "14px"

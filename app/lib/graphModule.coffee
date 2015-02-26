@@ -261,7 +261,7 @@ application.module 'GraphModule', (GraphModule, App, Backbone, Marionette, $, _)
                 if this.ifControl 
                   $("#line-#{d.source.index}").position().left + @inWidth
                 else
-                  $("#line-#{d.source.index}").position().left - offset.x/6
+                  $("#line-#{d.source.index}").position().left + @inWidth
               # $("#line-#{value.id}").position().left
               # line = d3.select(document.getElementById("line-#{value.id}"))
         #       #   'translate(' + L.DomUtil.getViewportOffset(document.getElementById("line-#{value.id}")).x+ ',' + L.DomUtil.getViewportOffset(document.getElementById("line-#{value.id}")).y + ')'
@@ -272,7 +272,7 @@ application.module 'GraphModule', (GraphModule, App, Backbone, Marionette, $, _)
               if this.ifControl
                 $("#line-#{d.source.index}").position().top + offset.y + 80
               else
-                $("#line-#{d.source.index}").position().top + 2 + (3 * offset.y) 
+                $("#line-#{d.source.index}").position().top + offset.y
             else
               # d.source.y
           ).attr('x2', (d) ->

@@ -249,7 +249,7 @@ application.module 'GraphModule', (GraphModule, App, Backbone, Marionette, $, _)
         #   return d3.transform(d3.select(@).attr("transform")).translate[0])
         @force.on 'tick', =>
           link.attr('stroke', (d) ->
-            if (document.getElementById("line-#{d.source.index}")) and $("#line-#{d.source.index}").position().top < 700 and $("#line-#{d.source.index}").position().top > 15
+            if (document.getElementById("line-#{d.source.index}")) and $("#line-#{d.source.index}").position().top < 1000 and $("#line-#{d.source.index}").position().top > 15
               return "#000"
             else
               return "none"
@@ -257,7 +257,7 @@ application.module 'GraphModule', (GraphModule, App, Backbone, Marionette, $, _)
             "linksource-#{d.source.index}"
           )  
           link.attr('x1', (d) =>
-            if (document.getElementById("line-#{d.source.index}")) and $("#line-#{d.source.index}").position().top < 700 and $("#line-#{d.source.index}").position().top > 15
+            if (document.getElementById("line-#{d.source.index}")) and $("#line-#{d.source.index}").position().top < 1000 and $("#line-#{d.source.index}").position().top > 15
                 if this.ifControl 
                   $("#line-#{d.source.index}").position().left + @inWidth
                 else
@@ -268,7 +268,7 @@ application.module 'GraphModule', (GraphModule, App, Backbone, Marionette, $, _)
             else
               # d.source.x
           ).attr('y1', (d) =>
-            if (document.getElementById("line-#{d.source.index}")) and $("#line-#{d.source.index}").position().top < 700 and $("#line-#{d.source.index}").position().top > 15
+            if (document.getElementById("line-#{d.source.index}")) and $("#line-#{d.source.index}").position().top < 1000 and $("#line-#{d.source.index}").position().top > 15
               if this.ifControl
                 $("#line-#{d.source.index}").position().top + offset.y + 80
               else
@@ -276,12 +276,12 @@ application.module 'GraphModule', (GraphModule, App, Backbone, Marionette, $, _)
             else
               # d.source.y
           ).attr('x2', (d) ->
-            if d.target.long and (document.getElementById("line-#{d.source.index}")) and $("#line-#{d.source.index}").position().top < 700 and $("#line-#{d.source.index}").position().top > 15
+            if d.target.long and (document.getElementById("line-#{d.source.index}")) and $("#line-#{d.source.index}").position().top < 1000 and $("#line-#{d.source.index}").position().top > 15
               _m.latLngToLayerPoint(L.latLng(d.target.long, d.target.lat)).x
             else
               d.target.x
           ).attr 'y2', (d) ->
-            if d.target.long and (document.getElementById("line-#{d.source.index}")) and $("#line-#{d.source.index}").position().top < 700 and $("#line-#{d.source.index}").position().top > 15
+            if d.target.long and (document.getElementById("line-#{d.source.index}")) and $("#line-#{d.source.index}").position().top < 1000 and $("#line-#{d.source.index}").position().top > 15
               _m.latLngToLayerPoint(L.latLng(d.target.long, d.target.lat)).y
             else
               d.target.y

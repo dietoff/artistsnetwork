@@ -261,7 +261,7 @@ application.module 'GraphModule', (GraphModule, App, Backbone, Marionette, $, _)
                 if this.ifControl 
                   $("#line-#{d.source.index}").position().left + @inWidth
                 else
-                  $("#line-#{d.source.index}").position().left + @inWidth
+                  $("#map").position().left + offset.x/2
               # $("#line-#{value.id}").position().left
               # line = d3.select(document.getElementById("line-#{value.id}"))
         #       #   'translate(' + L.DomUtil.getViewportOffset(document.getElementById("line-#{value.id}")).x+ ',' + L.DomUtil.getViewportOffset(document.getElementById("line-#{value.id}")).y + ')'
@@ -532,6 +532,7 @@ application.module 'GraphModule', (GraphModule, App, Backbone, Marionette, $, _)
         L.DomUtil.enableTextSelection(@_textDomEl)  
         # @_m.getPanes().overlayPane.appendChild(@_textDomEl)
         @_textDomObj = $(L.DomUtil.get(@_textDomEl))
+        @inWidth = $(@_m.getContainer())[0].clientWidth/5
         @_textDomObj.css('width', $(@_m.getContainer())[0].clientWidth/5)
         @_textDomObj.css('height', $(@_m.getContainer())[0].clientHeight)
         @_textDomObj.css('background-color', 'none')

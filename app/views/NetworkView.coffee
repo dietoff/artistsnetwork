@@ -23,8 +23,6 @@ module.exports = class NetworkView extends Backbone.Marionette.LayoutView
 
 	onShow: ->
 		$(document).ready =>
-		console.log "size", $("body")[0].clientHeight
-		$("#map").css("width", $("body")[0].clientHeight)
 		# application.GraphModule.makeMap()
 		@regionManager.addRegions @regions
 		console.log application

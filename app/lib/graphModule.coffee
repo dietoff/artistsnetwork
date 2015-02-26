@@ -578,7 +578,7 @@ application.module 'GraphModule', (GraphModule, App, Backbone, Marionette, $, _)
           # L.DomEvent.disableClickPropagation(this) 
           
           return
-        ).on("tap", (d,i) ->
+        ).on("click", (d,i) ->
           d3.select(this).transition().duration(10).style("color", "rgb(72,72,72)").style("background-color", "rgb(208,208,208) ").style "opacity", 1
           GraphModule.Controller.resetHighlightLinksBy()
           GraphModule.Controller.resetHighlightNodesBy()

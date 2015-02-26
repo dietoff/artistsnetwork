@@ -589,7 +589,7 @@ application.module 'GraphModule', (GraphModule, App, Backbone, Marionette, $, _)
             L.DomEvent.addListener @_leafletli, 'mouseout', (e) =>
               timeout = 0
               
-              @force.resume()
+              # @force.resume()
               setTimeout (->
                 $(L.DomUtil.get(_this._domEl)).animate
                   opacity: 0
@@ -614,12 +614,13 @@ application.module 'GraphModule', (GraphModule, App, Backbone, Marionette, $, _)
               , 900)
               return 
             , ->
+              _this.force.resume()
               return
             d.name
         ).style("font-size", "14px"
         ).style("color", "rgb(72,72,72)" 
         ).transition().duration(1).delay(1).style("opacity", 1)
-    
+
     return @_textDomEl
 
   return

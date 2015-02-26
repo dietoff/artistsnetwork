@@ -9,6 +9,8 @@ module.exports = class GraphView extends Backbone.Marionette.ItemView
 	links: []
 	
 	initialize: ->
+		# console.log "size", $("body")[0].clientHeight
+		# $("#map").css("height", $("body")[0].clientHeight)
 		if application.GraphModule.getMap() is undefined
 			application.GraphModule.makeMap()
 	onThisArtist: (node) =>

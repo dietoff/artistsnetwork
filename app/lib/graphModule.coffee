@@ -619,13 +619,7 @@ application.module 'GraphModule', (GraphModule, App, Backbone, Marionette, $, _)
         ).style("font-size", "14px"
         ).style("color", "rgb(72,72,72)" 
         ).transition().duration(1).delay(1).style("opacity", 1)
-    if !L.Browser.touch
-      L.DomEvent.disableClickPropagation @_textDomEl
-      L.DomEvent.on @_textDomObj, 'mouseover', L.DomEvent.stopPropagation
-      L.DomEvent.on @_textDomEl, 'mouseover', L.DomEvent.stopPropagation
-      L.DomEvent.on @_textDomEl, 'mousewheel', L.DomEvent.stopPropagation
-    else
-      L.DomEvent.on @_textDomEl, 'click', L.DomEvent.stopPropagation
+    
     return @_textDomEl
 
   return

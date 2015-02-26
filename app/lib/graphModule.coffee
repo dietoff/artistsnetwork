@@ -583,7 +583,7 @@ application.module 'GraphModule', (GraphModule, App, Backbone, Marionette, $, _)
             @_leafletli = L.DomUtil.get("line-#{i}")
             timeout = undefined
             L.DomEvent.addListener @_leafletli, 'click', (e) ->
-              e.stopPropagation()
+              # e.stopPropagation()
             L.DomEvent.addListener @_leafletli, 'mouseout', (e) =>
               timeout = 0
               

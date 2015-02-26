@@ -578,14 +578,15 @@ application.module 'GraphModule', (GraphModule, App, Backbone, Marionette, $, _)
           # L.DomEvent.disableClickPropagation(this) 
           
           return
-        ).on("click", (d,i) ->
-          d3.select(this).transition().duration(10).style("color", "rgb(72,72,72)").style("background-color", "rgb(208,208,208) ").style "opacity", 1
-          GraphModule.Controller.resetHighlightLinksBy()
-          GraphModule.Controller.resetHighlightNodesBy()
-          GraphModule.Controller.highlightLinksBy(d)
-          GraphModule.Controller.highlightNodesBy(d)
-          d3.select(this).transition().duration(2000).style("color", "rgb(72,72,72)").style("background-color", "white").style "opacity", 1
-          
+        ).on("click", (d,i) =>
+          @force.stop()
+          # d3.select(this).transition().duration(10).style("color", "rgb(72,72,72)").style("background-color", "rgb(208,208,208) ").style "opacity", 1
+          # GraphModule.Controller.resetHighlightLinksBy()
+          # GraphModule.Controller.resetHighlightNodesBy()
+          # GraphModule.Controller.highlightLinksBy(d)
+          # GraphModule.Controller.highlightNodesBy(d)
+          # d3.select(this).transition().duration(2000).style("color", "rgb(72,72,72)").style("background-color", "white").style "opacity", 1
+          @force.resume()
           # L.DomEvent.disableClickPropagation(this) 
           
           return

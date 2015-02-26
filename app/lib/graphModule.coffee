@@ -585,6 +585,18 @@ application.module 'GraphModule', (GraphModule, App, Backbone, Marionette, $, _)
             L.DomEvent.addListener @_leafletli, 'click', (e) =>
               @force.stop()
               @force.resume()
+              timeout = 0
+              
+              # @force.resume()
+              setTimeout (->
+                $(L.DomUtil.get(_this._domEl)).animate
+                  opacity: 0
+                , 100, ->
+
+                return
+
+              # Animation complete.
+              )
               e.stopPropagation()
             L.DomEvent.addListener @_leafletli, 'mouseout', (e) =>
               timeout = 0

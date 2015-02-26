@@ -36,8 +36,8 @@ module.exports = class BiosView extends Backbone.Marionette.LayoutView
 			# @el = $('#region-bios')
 			# ajax the data, when load setup
 			d3.json 'http://localhost:3001/artists', (error, text) =>
-				# application.GraphModule.makeDivList(@$el, Width, Height, _margin, text, @_m)	
-				application.GraphModule.makeControler(@$el, Width, Height, _margin, text,  @_m)	
+				application.GraphModule.makeDivList(@$el, Width, Height, _margin, text, @_m)	
+				# application.GraphModule.makeControler(@$el, Width, Height, _margin, text,  @_m)	
 				# console.log "@_m", @_m
 				# console.log textControl
 				@_m.whenReady =>

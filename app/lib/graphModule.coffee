@@ -6,6 +6,7 @@ application.module 'GraphModule', (GraphModule, App, Backbone, Marionette, $, _)
   GraphModule.Controller =
 
       highlightLinksBy: (sourceNode) =>
+        # @force.stop()
         @vis.selectAll("line").filter((d, i) ->
           d.source.name == sourceNode.name
         ).transition().duration(200).style("opacity", 0.9)
@@ -37,6 +38,14 @@ application.module 'GraphModule', (GraphModule, App, Backbone, Marionette, $, _)
             return 0
         ).style("stroke-width", 1)
 
+      startForce: =>
+        console.log "@force start", @force
+        @force.start()
+
+      stopForce: =>
+        console.log @force
+        @force.stop()
+
       # write methods
       # # getAllNodes
       # # getNodesBy(name, value)
@@ -60,10 +69,16 @@ application.module 'GraphModule', (GraphModule, App, Backbone, Marionette, $, _)
       GraphModule.Controller.resetHighlightLinksBy(d)   
 
     highlightNodesBy: (d) ->
-      GraphModule.Controller.highlightNodesBy(d)  
+      GraphModule.Controller.highlightNodesBy(d)    
 
     resetHighlightNodesBy: -> 
       GraphModule.Controller.resetHighlightNodesBy()
+
+    startForce: () ->
+      GraphModule.Controller.startForce()      
+
+    stopForce: () ->
+      GraphModule.Controller.stopForce()      
 
   App.addInitializer ->
     new GraphModule.Router
@@ -77,7 +92,8 @@ application.module 'GraphModule', (GraphModule, App, Backbone, Marionette, $, _)
   myData = 'this is private data'
   ifControl = false
   inWidth = 60
-  myFunction = ->
+  stopForce = =>
+    @force.stop()
     return
 
   # Public Data And Functions
@@ -294,8 +310,8 @@ application.module 'GraphModule', (GraphModule, App, Backbone, Marionette, $, _)
         #   @force.tick()
 
         @force.start()
-        L.DomUtil.addClass(_textDomEl, "leaflet-control-container")
-        L.DomUtil.removeClass(_textDomEl, "graph_up")
+        # L.DomUtil.addClass(_textDomEl, "leaflet-control-container")
+        # L.DomUtil.removeClass(_textDomEl, "graph_up")
     return
 
 
@@ -404,6 +420,7 @@ application.module 'GraphModule', (GraphModule, App, Backbone, Marionette, $, _)
         # id = id + 1
         return "line-#{i}" 
       ).on("mouseover", (d,i) ->
+        GraphModule.Controller.stopForce()
         GraphModule.Controller.highlightLinksBy(d)
         GraphModule.Controller.highlightNodesBy(d)
         $(this).css('cursor','pointer')
@@ -412,6 +429,7 @@ application.module 'GraphModule', (GraphModule, App, Backbone, Marionette, $, _)
         # L.DomEvent.disableClickPropagation($("#graph_up")) 
         return 
       ).on("mouseout", (d,i) ->
+        GraphModule.Controller.startForce()
         GraphModule.Controller.resetHighlightLinksBy()
         GraphModule.Controller.resetHighlightNodesBy()
         d3.select(this).transition().duration(1000).style("color", "rgb(72,72,72)").style("background-color", "white").style "opacity", 1
@@ -422,19 +440,21 @@ application.module 'GraphModule', (GraphModule, App, Backbone, Marionette, $, _)
         if d.group isnt 1
           @_leafletli = L.DomUtil.get("line-#{i}")
           timeout = undefined
-          L.DomEvent.addListener @_leafletli, 'click', (e) ->
-            if this.getEvents
-              map.on
+          L.DomEvent.addListener @_leafletli, 'click', (e) =>
+            # _this.force.stop()
             GraphModule.Controller.resetHighlightLinksBy()
             GraphModule.Controller.resetHighlightNodesBy()
             GraphModule.Controller.highlightLinksBy(d)
             GraphModule.Controller.highlightNodesBy(d)
+            # @force.stop()
+            # _this.force.start()
             e.stopPropagation()
+
           L.DomEvent.addListener @_leafletli, 'mouseout', (e) =>
             timeout = 0
             
-            @force.resume()
             setTimeout (->
+              # _this.force.start()
               $(L.DomUtil.get(_this._domEl)).animate
                 opacity: 0
               , 100, ->
@@ -443,22 +463,24 @@ application.module 'GraphModule', (GraphModule, App, Backbone, Marionette, $, _)
 
             # Animation complete.
             )
-          L.DomEvent.addListener @_leafletli, 'mouseover', (e) ->
+          L.DomEvent.addListener @_leafletli, 'mouseover', (e) =>
+            
             $(this).css('cursor','pointer')
             L.DomEvent.preventDefault(e)
-            e.stopPropagation()
             # App.vent.trigger 'addNodes', d
             # GraphModule.Controller.onArtist(d)
             # linkedTo = App.vent.trigger 'getLinksBy', d
 
             timeout = setTimeout(->
-              _this.force.stop()
+              # _this.force.stop()
+              # _this.force.stop()
               _this._m._initPathRoot()
               if timeout isnt 0 
                 timeout = 0
             , 900)
             return 
           , ->
+            e.stopPropagation()
             return
           d.name
       ).style("font-size", "14px"
@@ -470,17 +492,20 @@ application.module 'GraphModule', (GraphModule, App, Backbone, Marionette, $, _)
       #     -71.12
       #   ], 13)
       offset = L.DomUtil.getViewportOffset @_textDomEl
-      if !L.Browser.touch
-        L.DomEvent.disableClickPropagation @_textDomEl
-        L.DomEvent.on @_textDomObj, 'mouseover', L.DomEvent.stopPropagation
-        L.DomEvent.on @_textDomEl, 'mouseover', L.DomEvent.stopPropagation
-        L.DomEvent.on @_textDomEl, 'mousewheel', L.DomEvent.stopPropagation
-      else
-        L.DomEvent.on @_textDomEl, 'click', L.DomEvent.stopPropagation
+      # if !L.Browser.touch
+        # L.DomEvent.disableClickPropagation @_textDomEl
+        # L.DomEvent.on @_textDomObj, 'mouseover', L.DomEvent.stopPropagation
+        # L.DomEvent.on @_textDomEl, 'mouseover', L.DomEvent.stopPropagation
+        # L.DomEvent.on @_textDomEl, 'mousewheel', L.DomEvent.stopPropagation
+      # else
+        # L.DomEvent.on @_textDomEl, 'click', L.DomEvent.stopPropagation
       return @_m
 
 
   GraphModule.makeDivList = ($el, Width, Height, _margin, text, @_m)->
+        # L.DomUtil.removeClass(L.DomUtil.get("region-bios"), "col-md-2")
+        L.DomUtil.removeClass(L.DomUtil.get("map-region"), "col-md-12")
+        L.DomUtil.addClass(L.DomUtil.get("map-region"), "col-md-10")
         id = 0
         @artistBios = []
         for bios in text

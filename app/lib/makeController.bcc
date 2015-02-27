@@ -1,0 +1,147 @@
+GraphModule.makeControler = ($el, Width, Height, _margin, text, @_m)->
+      this.ifControl = true
+      L.DomUtil.removeClass(L.DomUtil.get("region-bios"), "col-md-2")
+      L.DomUtil.removeClass(L.DomUtil.get("map-region"), "col-md-10")
+      L.DomUtil.addClass(L.DomUtil.get("map-region"), "col-md-12")
+      textControl = L.Control.extend(
+        options:
+          position: "topleft"
+        onAdd: (map) =>
+          @_m = map  
+            # create the control container with a particular class name
+          text = []
+          @artistBios = []
+          if @_nodes
+            for key, value of @_nodes            
+              text.push {name: value.name, id: value.index, group: value.group}
+          # else
+          #   text = GraphModule.getAllNodes()
+          @_text = text
+          @_textDomEl = L.DomUtil.create('div', 'container -info')
+          @_el = L.DomUtil.create('svg', 'svg')
+          @_m.getPanes().overlayPane.appendChild(@_el)
+          # @_textDomEl_innerdiv = L.DomUtil.create('div', 'container -info')
+          # @_m.getPanes().overlayPane.appendChild(@_textDomEl_innerdiv )
+          @_textDomEl.innerHTML += "<div id='artist-list' class='paratext-info leaflet-control'></div>"
+          L.DomUtil.enableTextSelection(@_textDomEl)  
+          
+          @_textDomObj = $(L.DomUtil.get(@_textDomEl))
+          @inWidth = $(@_m.getContainer())[0].clientWidth/5
+          @_textDomObj.css('width', $(@_m.getContainer())[0].clientWidth/5)
+          @_textDomObj.css('height', $(@_m.getContainer())[0].clientHeight)
+          @_textDomObj.css('background-color', 'white')
+          @_textDomObj.css('overflow', 'scroll')
+          L.DomUtil.setOpacity(L.DomUtil.get(@_textDomEl), .8)
+          # here it needs to check to see if there is any vewSet avalable if not it should get it from the lates instance or somethign
+          # @_viewSet = @_m.getCenter() if @_viewSet is undefined
+          # L.DomUtil.setPosition(L.DomUtil.get(@_textDomEl), L.point(40, -65), disable3D=0)
+          
+          
+          @_textDomEl
+        onSetView: (map) =>
+          @_m = map
+
+
+      )
+      div = new textControl()
+      @_m.addControl div
+      @_d3text = d3.select(".paratext-info")
+      .append("ul").style("list-style-type", "none").style("padding-left", "0px")
+      .attr("width", $(@_m.getContainer())[0].clientWidth/5 )
+      .attr("height", $(@_m.getContainer())[0].clientHeight-80)
+      @_d3li = @_d3text
+      .selectAll("li")
+      .data(text)
+      .enter()
+      .append("li")
+      @_d3li.style("font-family", "Helvetica")
+      .style("line-height", "2")
+      .style("border", "0px solid gray")
+      .style("margin-top", "20px")
+      .style("padding-right", "20px")
+      .style("padding-left", "40px")
+      .attr("id", (d, i) =>
+        @artistBios.push {'name' :d.name, 'id': i}
+        # id = id + 1
+        return "line-#{i}" 
+      ).on("mouseover", (d,i) ->
+        GraphModule.Controller.stopForce()
+        GraphModule.Controller.highlightLinksBy(d)
+        GraphModule.Controller.highlightNodesBy(d)
+        $(this).css('cursor','pointer')
+        d3.select(this).transition().duration(0).style("color", "black").style("background-color", "rgb(208,208,208) ").style "opacity", 1
+        L.DomEvent.disableClickPropagation(this) 
+        # L.DomEvent.disableClickPropagation($("#graph_up")) 
+        return 
+      ).on("mouseout", (d,i) ->
+        GraphModule.Controller.startForce()
+        GraphModule.Controller.resetHighlightLinksBy()
+        GraphModule.Controller.resetHighlightNodesBy()
+        d3.select(this).transition().duration(1000).style("color", "rgb(72,72,72)").style("background-color", "white").style "opacity", 1
+        L.DomEvent.disableClickPropagation(this) 
+        
+        return
+      ).append("text").text((d,i) =>
+        if d.group isnt 1
+          @_leafletli = L.DomUtil.get("line-#{i}")
+          timeout = undefined
+          L.DomEvent.addListener @_leafletli, 'click', (e) =>
+            # _this.force.stop()
+            GraphModule.Controller.resetHighlightLinksBy()
+            GraphModule.Controller.resetHighlightNodesBy()
+            GraphModule.Controller.highlightLinksBy(d)
+            GraphModule.Controller.highlightNodesBy(d)
+            # @force.stop()
+            # _this.force.start()
+            e.stopPropagation()
+
+          L.DomEvent.addListener @_leafletli, 'mouseout', (e) =>
+            timeout = 0
+            
+            setTimeout (->
+              # _this.force.start()
+              $(L.DomUtil.get(_this._domEl)).animate
+                opacity: 0
+              , 100, ->
+
+              return
+
+            # Animation complete.
+            )
+          L.DomEvent.addListener @_leafletli, 'mouseover', (e) =>
+            
+            $(this).css('cursor','pointer')
+            L.DomEvent.preventDefault(e)
+            # App.vent.trigger 'addNodes', d
+            # GraphModule.Controller.onArtist(d)
+            # linkedTo = App.vent.trigger 'getLinksBy', d
+
+            timeout = setTimeout(->
+              # _this.force.stop()
+              # _this.force.stop()
+              _this._m._initPathRoot()
+              if timeout isnt 0 
+                timeout = 0
+            , 900)
+            return 
+          , ->
+            e.stopPropagation()
+            return
+          d.name
+      ).style("font-size", "14px"
+      ).style("color", "rgb(72,72,72)" 
+      ).transition().duration(1).delay(1).style("opacity", 1)
+      # @_m.whenReady =>
+      #   @_m.setView([
+      #     42.34
+      #     -71.12
+      #   ], 13)
+      offset = L.DomUtil.getViewportOffset @_textDomEl
+      # if !L.Browser.touch
+        # L.DomEvent.disableClickPropagation @_textDomEl
+        # L.DomEvent.on @_textDomObj, 'mouseover', L.DomEvent.stopPropagation
+        # L.DomEvent.on @_textDomEl, 'mouseover', L.DomEvent.stopPropagation
+        # L.DomEvent.on @_textDomEl, 'mousewheel', L.DomEvent.stopPropagation
+      # else
+        # L.DomEvent.on @_textDomEl, 'click', L.DomEvent.stopPropagation
+      return @_m

@@ -6,73 +6,96 @@ application.module 'GraphModule', (GraphModule, App, Backbone, Marionette, $, _)
   GraphModule.Controller =
 
       highlightLinksBy: (sourceNode) =>
-        # @force.stop()
         @vis.selectAll("line").filter((d, i) ->
           d.source.name == sourceNode.name
         ).transition().duration(200).style("opacity", 0.9)
         return
 
       resetHighlightLinksBy: =>
-        @vis.selectAll("line").style("opacity", 0.2)
+        @vis.selectAll("line").style("opacity", 0.0)
 
       highlightNodesBy: (sourceNode) =>
-        selectedNodes = []
+        # selectedNodes = []
         @_links.forEach (link) => 
             if link.source.name == sourceNode.name
               @vis.selectAll("circle").filter((d, i) =>
                 d.name == link.target.name
-                selectedNodes.push 'lat': +d.lat, 'long': +d.long if d.name == link.target.name
-              ).transition().duration(200
-              ).style("opacity", 0.9
+                # selectedNodes.push 'lat': +d.lat, 'long': +d.long if d.name == link.target.name
+              ).transition().duration(1
+              ).style("opacity", 0.5
               ).attr("r", 5
-              ).style("stroke-width", 2
+              ).style("fill", (d) =>
+                return @color(sourceNode.id)
+              ).style("stroke", (d) =>
+                return @color(sourceNode.id)
+              ).style("stroke-width", 4
               ).text( (d) =>
                 return d.name
+              ).transition().duration(900
+              ).style("opacity", 1
+              ).attr("r", 20
+              ).style("stroke", (d) =>
+                return @color(sourceNode.id)
+              # ).style("fill", (d) =>
+              #   return "none"
+              ).style("stroke-width", 1
+              ).transition().delay(50).duration(200
+              ).attr("r", 10
+              ).style("stroke", (d) =>
+                return @color(sourceNode.id)
+              ).style("fill", (d) =>
+                return @color(sourceNode.id)
+              ).style("stroke-width", 0
+              # ).transition().duration(0
+              # ).style("opacity", 0.8
+              # ).attr("r", 5
+              # ).style("fill", (d) =>
+              #   return @color(sourceNode.id)
               )
-              return 
-            return
-        @force.stop()
-        console.log "selectedNodes", selectedNodes
-        lats = [] 
-        longs = []
-        selectedNodes.forEach (d) =>
-          lats.push d.lat
-          longs.push d.long
-        # nodesList = [selectedNodes.forEach ()]
-        minlat = d3.min(lats)
-        minlong = d3.min(longs)
-        maxlat = d3.max(lats)
-        maxlong = d3.max(longs)
-        sw = [minlat, minlong]
-        ne = [maxlat, maxlong]
-        console.log sw, ne
+              @vis.selectAll("text.nodetext").filter((d, i) =>
+                d.name == link.target.name
+              ).transition().duration(600).style("opacity", 1)
 
+              return
+            return
+        # lats = [] 
+        # longs = []
+        # selectedNodes.forEach (d) =>
+        #   lats.push d.lat
+        #   longs.push d.long
+        # minlat = d3.min(lats)
+        # minlong = d3.min(longs)
+        # maxlat = d3.max(lats)
+        # maxlong = d3.max(longs)
+        # sw = [minlat, minlong]
+        # ne = [maxlat, maxlong]
         # if @_m.getBounds().contains([sw, ne]) is false
-        @_m.fitBounds([sw, ne], {pan: {animate: false}})
+        # @_m.fitBounds([sw, ne], {pan: {animate: false}})
         # else
           # @_m.fitBounds([sw, ne], {pan: {animate: false}})
           # @_mm.setView(center, zoom, {pan: {animate: false}});
-        onSetView: (map) =>
-          @force.start()
+        # onSetView: (map) =>
+        #   @force.start()
         # @_m.whenReady =>
         #   @force.start()
 
         return
       resetHighlightNodesBy: =>
-        @vis.selectAll("circle").style("opacity", 0.6).attr("r", (d) ->
+        @vis.selectAll("circle").transition().duration(500).style("opacity", 0.6).attr("r", (d) ->
           if d.group
-            return 3
+            return 0
           else 
             return 0
         ).style("stroke-width", 1)
+        @vis.selectAll("text.nodetext").transition().duration(500).style("opacity", 0)
 
-      startForce: =>
-        console.log "@force start", @force
-        @force.start()
+      # startForce: =>
+      #   console.log "@force start", @force
+      #   @force.start()
 
-      stopForce: =>
-        console.log @force
-        @force.stop()
+      # stopForce: =>
+      #   console.log @force
+      #   @force.stop()
 
       # write methods
       # # getAllNodes
@@ -119,6 +142,7 @@ application.module 'GraphModule', (GraphModule, App, Backbone, Marionette, $, _)
   # --------------------------
   myData = 'this is private data'
   ifControl = false
+  # noFollowLinks = true
   inWidth = 60
   stopForce = =>
     @force.stop()
@@ -231,7 +255,8 @@ application.module 'GraphModule', (GraphModule, App, Backbone, Marionette, $, _)
 
 
         # setup the color scale
-        color = d3.scale.category20()
+        @color = d3.scale.category10()
+        # console.log color
         # some basic example http://jsfiddle.net/simonraper/bpKG4/light/
         vis = @vis = d3.select('.graph').append('svg:svg').attr('width', w).attr('height', h)
         force = @force = d3.layout.force(
@@ -245,64 +270,44 @@ application.module 'GraphModule', (GraphModule, App, Backbone, Marionette, $, _)
         @nodes = @force.nodes(d3.values(_nodes))
         links = @force.links()
         link = @vis.selectAll('.link').data(_links)
-        link.enter().insert("line", ".node").attr("class", "link").style("opacity", 0.2)
-        link.exit().remove()
+        # link.enter().insert("line", ".node").attr("class", "link").style("opacity", 0.1)
+        # link.exit().remove()
         
         node = @vis.selectAll('g.node'
         ).data(d3.values(_nodes), (d) ->
           d.name
         )
+        color = @color
         _artistNodes = @_nodes
         nodeEnter = node.enter().append('g').attr('class', 'node').call(@force.drag)
         nodeEnter.append('circle').property("id", (d, i) => "node-#{i}").attr('r', (d) ->
           if d.group
-            return 3
+            return 0
           else
             return 0
         ).style("opacity", 0.6).style('fill', (d) =>
-          if d.group
+          if d.group 
             return "none"# color(d.group)
           else
             return "node"
         ).attr('x', '-1px').attr('y', '-1px').attr('width', '4px').attr 'height', '4px'
-        nodeEnter.append('text').attr('class', 'nodetext').attr('dx', 12).attr('dy', '.35em').attr('id', (d,i) ->
+        nodeEnter.append('text').attr('class', 'nodetext').attr('dx', 12).attr('dy', '.35em').style("opacity", 0).attr("fill", (d, i) ->
+          return "gray" #color(i)
+        ).attr('id', (d,i) ->
           return i
-        )#.text (d) ->
-          #if d.group is 1
-           # return d.name# color(d.group)
+        ).text (d) ->
+          if d.group is 1
+            return d.name# color(d.group)
+
         node.exit().remove()
 
 
-        # .attr("x", ->
-        #   return d3.transform(d3.select(@).attr("transform")).translate[0])
+        @noFollowLinks = true
         @force.on 'tick', =>
-          link.attr('stroke', (d) ->
-            if (document.getElementById("line-#{d.source.index}")) and $("#line-#{d.source.index}").position().top < 1000 and $("#line-#{d.source.index}").position().top > 15
-              return "#000"
-            else
-              return "none"
-          ).property("id", (d, i) => 
-            "linksource-#{d.source.index}"
-          )  
           link.attr('x1', (d) =>
-            if (document.getElementById("line-#{d.source.index}")) and $("#line-#{d.source.index}").position().top < 1000 and $("#line-#{d.source.index}").position().top > 15
-                if this.ifControl 
-                  $("#line-#{d.source.index}").position().left + @inWidth
-                else
-                  $("#map").position().left + offset.x/3
-              # $("#line-#{value.id}").position().left
-              # line = d3.select(document.getElementById("line-#{value.id}"))
-        #       #   'translate(' + L.DomUtil.getViewportOffset(document.getElementById("line-#{value.id}")).x+ ',' + L.DomUtil.getViewportOffset(document.getElementById("line-#{value.id}")).y + ')'
-            else
-              # d.source.x
+            d.source.x
           ).attr('y1', (d) =>
-            if (document.getElementById("line-#{d.source.index}")) and $("#line-#{d.source.index}").position().top < 1000 and $("#line-#{d.source.index}").position().top > 15
-              if this.ifControl
-                $("#line-#{d.source.index}").position().top + offset.y + 80
-              else
-                $("#line-#{d.source.index}").position().top + offset.y
-            else
-              # d.source.y
+            d.source.y
           ).attr('x2', (d) ->
             if d.target.long and (document.getElementById("line-#{d.source.index}")) and $("#line-#{d.source.index}").position().top < 1000 and $("#line-#{d.source.index}").position().top > 15
               _m.latLngToLayerPoint(L.latLng(d.target.long, d.target.lat)).x
@@ -314,32 +319,20 @@ application.module 'GraphModule', (GraphModule, App, Backbone, Marionette, $, _)
             else
               d.target.y
           node.attr('transform', (d) =>
-            if d.lat
+            if d.group == 1
               'translate(' + _m.latLngToLayerPoint(L.latLng(d.long, d.lat)).x + ',' + _m.latLngToLayerPoint(L.latLng(d.long, d.lat)).y + ')'
             else
-                if (document.getElementById("line-#{d.index}"))
-                  if @ifControl
-                    x_pos = $("#line-#{d.index}").position().left + @inWidth
-                    y_pos = $("#line-#{d.index}").position().top + 80
-                    'translate(' + x_pos +  ',' + y_pos  + ')'
-                  else
-                    x_pos = $("#line-#{d.index}").position().left - offset.x/6
-                    y_pos = $("#line-#{d.index}").position().top + offset.y + 80
-                    'translate(' + x_pos +  ',' + y_pos  + ')'
-                  # $("#line-#{value.id}").position().left
-                  # line = d3.select(document.getElementById("line-#{value.id}"))
-            #       #   'translate(' + L.DomUtil.getViewportOffset(document.getElementById("line-#{value.id}")).x+ ',' + L.DomUtil.getViewportOffset(document.getElementById("line-#{value.id}")).y + ')'
-                else
-                  'translate(' + d.x + ',' + d.y + ')'
+              'translate(' + d.x + ',' + d.y + ')'
           )
           return
         
         @force.on 'start', =>
-          @force.tick()
+          link.property("id", (d, i) => 
+            "linksource-#{d.source.index}"
+          ) 
+        #   @force.tick()
 
         @force.start()
-        # L.DomUtil.addClass(_textDomEl, "leaflet-control-container")
-        # L.DomUtil.removeClass(_textDomEl, "graph_up")
     return
 
 
@@ -355,7 +348,7 @@ application.module 'GraphModule', (GraphModule, App, Backbone, Marionette, $, _)
         inertiaDeceleration: 4000
         animate: false
         duration: 1.75
-        zoomControl: true
+        zoomControl: false
         infoControl: false
         easeLinearity: 0.1
         )
@@ -381,154 +374,6 @@ application.module 'GraphModule', (GraphModule, App, Backbone, Marionette, $, _)
 
   GraphModule.getAllArtists = ->
     return @_text
-
-  GraphModule.makeControler = ($el, Width, Height, _margin, text, @_m)->
-      this.ifControl = true
-      L.DomUtil.removeClass(L.DomUtil.get("region-bios"), "col-md-2")
-      L.DomUtil.removeClass(L.DomUtil.get("map-region"), "col-md-10")
-      L.DomUtil.addClass(L.DomUtil.get("map-region"), "col-md-12")
-      textControl = L.Control.extend(
-        options:
-          position: "topleft"
-        onAdd: (map) =>
-          @_m = map  
-            # create the control container with a particular class name
-          text = []
-          @artistBios = []
-          if @_nodes
-            for key, value of @_nodes            
-              text.push {name: value.name, id: value.index, group: value.group}
-          # else
-          #   text = GraphModule.getAllNodes()
-          @_text = text
-          @_textDomEl = L.DomUtil.create('div', 'container -info')
-          @_el = L.DomUtil.create('svg', 'svg')
-          @_m.getPanes().overlayPane.appendChild(@_el)
-          # @_textDomEl_innerdiv = L.DomUtil.create('div', 'container -info')
-          # @_m.getPanes().overlayPane.appendChild(@_textDomEl_innerdiv )
-          @_textDomEl.innerHTML += "<div id='artist-list' class='paratext-info leaflet-control'></div>"
-          L.DomUtil.enableTextSelection(@_textDomEl)  
-          
-          @_textDomObj = $(L.DomUtil.get(@_textDomEl))
-          @inWidth = $(@_m.getContainer())[0].clientWidth/5
-          @_textDomObj.css('width', $(@_m.getContainer())[0].clientWidth/5)
-          @_textDomObj.css('height', $(@_m.getContainer())[0].clientHeight)
-          @_textDomObj.css('background-color', 'white')
-          @_textDomObj.css('overflow', 'scroll')
-          L.DomUtil.setOpacity(L.DomUtil.get(@_textDomEl), .8)
-          # here it needs to check to see if there is any vewSet avalable if not it should get it from the lates instance or somethign
-          # @_viewSet = @_m.getCenter() if @_viewSet is undefined
-          # L.DomUtil.setPosition(L.DomUtil.get(@_textDomEl), L.point(40, -65), disable3D=0)
-          
-          
-          @_textDomEl
-        onSetView: (map) =>
-          @_m = map
-
-
-      )
-      div = new textControl()
-      @_m.addControl div
-      @_d3text = d3.select(".paratext-info")
-      .append("ul").style("list-style-type", "none").style("padding-left", "0px")
-      .attr("width", $(@_m.getContainer())[0].clientWidth/5 )
-      .attr("height", $(@_m.getContainer())[0].clientHeight-80)
-      @_d3li = @_d3text
-      .selectAll("li")
-      .data(text)
-      .enter()
-      .append("li")
-      @_d3li.style("font-family", "Helvetica")
-      .style("line-height", "2")
-      .style("border", "0px solid gray")
-      .style("margin-top", "20px")
-      .style("padding-right", "20px")
-      .style("padding-left", "40px")
-      .attr("id", (d, i) =>
-        @artistBios.push {'name' :d.name, 'id': i}
-        # id = id + 1
-        return "line-#{i}" 
-      ).on("mouseover", (d,i) ->
-        GraphModule.Controller.stopForce()
-        GraphModule.Controller.highlightLinksBy(d)
-        GraphModule.Controller.highlightNodesBy(d)
-        $(this).css('cursor','pointer')
-        d3.select(this).transition().duration(0).style("color", "black").style("background-color", "rgb(208,208,208) ").style "opacity", 1
-        L.DomEvent.disableClickPropagation(this) 
-        # L.DomEvent.disableClickPropagation($("#graph_up")) 
-        return 
-      ).on("mouseout", (d,i) ->
-        GraphModule.Controller.startForce()
-        GraphModule.Controller.resetHighlightLinksBy()
-        GraphModule.Controller.resetHighlightNodesBy()
-        d3.select(this).transition().duration(1000).style("color", "rgb(72,72,72)").style("background-color", "white").style "opacity", 1
-        L.DomEvent.disableClickPropagation(this) 
-        
-        return
-      ).append("text").text((d,i) =>
-        if d.group isnt 1
-          @_leafletli = L.DomUtil.get("line-#{i}")
-          timeout = undefined
-          L.DomEvent.addListener @_leafletli, 'click', (e) =>
-            # _this.force.stop()
-            GraphModule.Controller.resetHighlightLinksBy()
-            GraphModule.Controller.resetHighlightNodesBy()
-            GraphModule.Controller.highlightLinksBy(d)
-            GraphModule.Controller.highlightNodesBy(d)
-            # @force.stop()
-            # _this.force.start()
-            e.stopPropagation()
-
-          L.DomEvent.addListener @_leafletli, 'mouseout', (e) =>
-            timeout = 0
-            
-            setTimeout (->
-              # _this.force.start()
-              $(L.DomUtil.get(_this._domEl)).animate
-                opacity: 0
-              , 100, ->
-
-              return
-
-            # Animation complete.
-            )
-          L.DomEvent.addListener @_leafletli, 'mouseover', (e) =>
-            
-            $(this).css('cursor','pointer')
-            L.DomEvent.preventDefault(e)
-            # App.vent.trigger 'addNodes', d
-            # GraphModule.Controller.onArtist(d)
-            # linkedTo = App.vent.trigger 'getLinksBy', d
-
-            timeout = setTimeout(->
-              # _this.force.stop()
-              # _this.force.stop()
-              _this._m._initPathRoot()
-              if timeout isnt 0 
-                timeout = 0
-            , 900)
-            return 
-          , ->
-            e.stopPropagation()
-            return
-          d.name
-      ).style("font-size", "14px"
-      ).style("color", "rgb(72,72,72)" 
-      ).transition().duration(1).delay(1).style("opacity", 1)
-      # @_m.whenReady =>
-      #   @_m.setView([
-      #     42.34
-      #     -71.12
-      #   ], 13)
-      offset = L.DomUtil.getViewportOffset @_textDomEl
-      # if !L.Browser.touch
-        # L.DomEvent.disableClickPropagation @_textDomEl
-        # L.DomEvent.on @_textDomObj, 'mouseover', L.DomEvent.stopPropagation
-        # L.DomEvent.on @_textDomEl, 'mouseover', L.DomEvent.stopPropagation
-        # L.DomEvent.on @_textDomEl, 'mousewheel', L.DomEvent.stopPropagation
-      # else
-        # L.DomEvent.on @_textDomEl, 'click', L.DomEvent.stopPropagation
-      return @_m
 
 
   GraphModule.makeDivList = ($el, Width, Height, _margin, text, @_m)->
@@ -569,6 +414,7 @@ application.module 'GraphModule', (GraphModule, App, Backbone, Marionette, $, _)
         L.DomUtil.setOpacity(L.DomUtil.get(@_textDomEl), .8)
 
         # here it needs to check to see if there is any vewSet avalable if not it should get it from the lates instance or somethign
+        color = @color
         @_viewSet = @_m.getCenter() if @_viewSet is undefined
         @_d3text = d3.select(".paratext-info")
         .append("ul"
@@ -590,32 +436,17 @@ application.module 'GraphModule', (GraphModule, App, Backbone, Marionette, $, _)
         .style("padding-left", "40px")
         .attr("id", (d, i) =>
             @artistBios.push {'name' :d.name, 'id': i}
-            # id = id + 1
             return "line-#{i}" 
-        ).on("mouseover", (d,i) ->
-          GraphModule.Controller.highlightLinksBy(d)
-          $(this).css('cursor','pointer')
-          d3.select(this).transition().duration(0).style("color", "black").style("background-color", "rgb(208,208,208) ").style "opacity", 1
-          # L.DomEvent.disableClickPropagation(this) 
-          # L.DomEvent.disableClickPropagation($("#graph_up")) 
-          return 
-        ).on("mouseout", (d,i) ->
-          GraphModule.Controller.resetHighlightLinksBy()
-          GraphModule.Controller.resetHighlightNodesBy()
-          d3.select(this).transition().duration(1000).style("color", "rgb(72,72,72)").style("background-color", "white").style "opacity", 1
-          # L.DomEvent.disableClickPropagation(this) 
-          
-          return
-        ).on("click", (d,i) =>
-          # @force.stop()
-          # d3.select(this).transition().duration(10).style("color", "rgb(72,72,72)").style("background-color", "rgb(208,208,208) ").style "opacity", 1
-          # GraphModule.Controller.resetHighlightLinksBy()
-          # GraphModule.Controller.resetHighlightNodesBy()
-          # GraphModule.Controller.highlightLinksBy(d)
-          # GraphModule.Controller.highlightNodesBy(d)
-          # d3.select(this).transition().duration(2000).style("color", "rgb(72,72,72)").style("background-color", "white").style "opacity", 1
-          # @force.resume()
-          # L.DomEvent.disableClickPropagation(this) 
+        ).on("click", (d,i) ->
+          console.log "cliclk inside d3"
+          L.DomEvent.disableClickPropagation(this) 
+          d3.select(this).transition().duration(0).style("color", "black").style("background-color", (d, i) ->
+            "white"
+          ).style "opacity", 1
+          d3.select(this).transition().duration(1000).style("color", "rgb(72,72,72)").style("background-color", (d, i) =>
+            id = d3.select(this).attr("id").replace("line-", "")
+            return color(id)
+          ).style("opacity", 1)
           
           return
         ).append("text").text((d,i) =>
@@ -623,58 +454,57 @@ application.module 'GraphModule', (GraphModule, App, Backbone, Marionette, $, _)
             @_leafletli = L.DomUtil.get("line-#{i}")
             timeout = undefined
             L.DomEvent.addListener @_leafletli, 'click', (e) =>
-              # @force.stop()
-              # @force.resume()
+              d3.selectAll(@_d3li[0]).style("color", "black").style("background-color", "white"
+              ).style "opacity", 1
+              GraphModule.Controller.resetHighlightLinksBy()
+              GraphModule.Controller.resetHighlightNodesBy()
               timeout = 0
-              
-              # @force.resume()
-              setTimeout (->
-                $(L.DomUtil.get(_this._domEl)).animate
-                  opacity: 0
-                , 100, ->
-
-                return
-
-              # Animation complete.
-              )
-              e.stopPropagation()
-            L.DomEvent.addListener @_leafletli, 'mouseout', (e) =>
-              timeout = 0
-              
-              # @force.resume()
-              setTimeout (->
-                $(L.DomUtil.get(_this._domEl)).animate
-                  opacity: 0
-                , 100, ->
-
-                return
-
-              # Animation complete.
-              )
-            L.DomEvent.addListener @_leafletli, 'mouseover', (e) ->
-              _this.force.stop()
-              $(this).css('cursor','pointer')
-              e.stopPropagation()
-              # App.vent.trigger 'addNodes', d
-              # GraphModule.Controller.onArtist(d)
-              # linkedTo = App.vent.trigger 'getLinksBy', d
-
               timeout = setTimeout(->
                 # 
                 _this._m._initPathRoot()
                 if timeout isnt 0 
                   timeout = 0
                   GraphModule.Controller.highlightNodesBy(d)
-              , 900)
-              # _this.force.resume()
+              , 600)
               return 
             , ->
 
               return
+              e.stopPropagation()
+            # L.DomEvent.addListener @_leafletli, 'mouseout', (e) =>
+            #   timeout = 0
+              
+            #   # @force.resume()
+            #   setTimeout (->
+            #     $(L.DomUtil.get(_this._domEl)).animate
+            #       opacity: 0
+            #     , 100, ->
+
+            #     return
+
+            #   # Animation complete.
+            #   )
+            # L.DomEvent.addListener @_leafletli, 'mouseover', (e) ->
+            #   _this.force.stop()
+            #   $(this).css('cursor','pointer')
+            #   e.stopPropagation()
+
+            #   timeout = setTimeout(->
+            #     # 
+            #     _this._m._initPathRoot()
+            #     if timeout isnt 0 
+            #       timeout = 0
+            #       GraphModule.Controller.highlightNodesBy(d)
+            #   , 900)
+            #   return 
+            # , ->
+
+            #   return
             d.name
         ).style("font-size", "14px"
         ).style("color", "rgb(72,72,72)" 
-        ).transition().duration(1).delay(1).style("opacity", 1)
+        ).transition().duration(1).delay(1).style("opacity", 1
+        )
 
     return @_textDomEl
 

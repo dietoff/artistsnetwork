@@ -1,6 +1,6 @@
 # ArtistsModule = require 'lib/graphModule'
 application = require 'application'
-Butterfly = require 'lib/Butterfly'
+# Butterfly = require 'lib/Butterfly'
 module.exports = class GraphView extends Backbone.Marionette.ItemView
 	@startWithParent = false
 	template: 'views/templates/graph'
@@ -39,8 +39,8 @@ module.exports = class GraphView extends Backbone.Marionette.ItemView
 			# else
 	
 	onShow: ->
-		application.Butterfly.start()
-		application.Butterfly.makeButterfly()
+		# application.Butterfly.start()
+		# application.Butterfly.makeButterfly()
 		$(document).ready =>
 			
 			

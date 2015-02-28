@@ -21,6 +21,8 @@ application.module 'GraphModule', (GraphModule, App, Backbone, Marionette, $, _)
               @vis.selectAll("circle").filter((d, i) =>
                 d.name == link.target.name
                 # selectedNodes.push 'lat': +d.lat, 'long': +d.long if d.name == link.target.name
+              ).on("click", (d, i) =>
+                console.log  "click. d i ", d, i
               ).transition().duration(1
               ).style("opacity", 0.5
               ).attr("r", 5
@@ -29,7 +31,27 @@ application.module 'GraphModule', (GraphModule, App, Backbone, Marionette, $, _)
               ).style("stroke", (d) =>
                 return @color(sourceNode.id)
               ).style("stroke-width", 4
-              ).text( (d) =>
+              ).text( (d, i) =>
+                _leafletli = L.DomUtil.get("node-#{i}")
+                timeout = undefined
+                L.DomEvent.addListener _leafletli, 'click', (e) =>
+                  # d3.selectAll(nodeEnter[0]).style("color", "black").style("background-color", "white"
+                  # ).style "opacity", 1
+                  timeout = 0
+                  console.log "click inside leaflet listener"
+                  timeout = setTimeout(->
+                    # 
+                    # console.log @
+                    # @_m._initPathRoot()
+                    if timeout isnt 0 
+                      timeout = 0
+                      # GraphModule.Controller.highlightNodesBy(d)
+                  , 600)
+                  return 
+                , ->
+
+                  return
+                  e.stopPropagation()
                 return d.name
               ).transition().duration(900
               ).style("opacity", 1
@@ -261,8 +283,8 @@ application.module 'GraphModule', (GraphModule, App, Backbone, Marionette, $, _)
         # some basic example http://jsfiddle.net/simonraper/bpKG4/light/
         vis = @vis = d3.select('.graph').append('svg:svg').attr('width', w).attr('height', h)
         force = @force = d3.layout.force(
-        ).gravity(.5
-        ).linkDistance(80
+        ).gravity(.25
+        ).linkDistance(40
         # ).charge(-80
         ).size([
           w
@@ -281,12 +303,14 @@ application.module 'GraphModule', (GraphModule, App, Backbone, Marionette, $, _)
         color = @color
         _artistNodes = @_nodes
         nodeEnter = node.enter().append('g').attr('class', 'node').call(@force.drag)
+        nodeEnter.attr("class", "leaflet-zoom-hide")
         nodeEnter.append('circle').property("id", (d, i) => "node-#{i}").attr('r', (d) ->
           if d.group in [0..3]
-            return 2
+            return 10
           else
             return 0
         ).attr('x', '-1px').attr('y', '-1px').attr('width', '4px').attr('height', '4px'
+        ).style("stroke", "none"
         ).style("opacity", 0.6).style('fill', (d) =>
           if d.group 
             return color(d.group)
@@ -297,9 +321,31 @@ application.module 'GraphModule', (GraphModule, App, Backbone, Marionette, $, _)
           return "gray" #color(i)
         ).attr('id', (d,i) ->
           return i
-        ).text (d) ->
+        ).text((d, i) ->
           if d.group in [0..3]
+            _leafletli = L.DomUtil.get("node-#{i}")
+            timeout = undefined
+            L.DomEvent.addListener _leafletli, 'click', (e) =>
+              # d3.selectAll(nodeEnter[0]).style("color", "black").style("background-color", "white"
+              # ).style "opacity", 1
+              timeout = 0
+              console.log "click inside leaflet listener"
+              timeout = setTimeout(->
+                # 
+                # console.log @
+                # @_m._initPathRoot()
+                if timeout isnt 0 
+                  timeout = 0
+                  # GraphModule.Controller.highlightNodesBy(d)
+              , 600)
+              return 
+            , ->
+
+              return
+              e.stopPropagation()
+
             return d.name# color(d.group)
+        )
 
         node.exit().remove()
 
@@ -308,13 +354,13 @@ application.module 'GraphModule', (GraphModule, App, Backbone, Marionette, $, _)
         @force.on 'tick', =>
           try
             node.attr('transform', (d) =>
-              if d.group == 1
+              if d.group == 1 and d.lat
                 'translate(' + _m.latLngToLayerPoint(L.latLng(d.long, d.lat)).x + ',' + _m.latLngToLayerPoint(L.latLng(d.long, d.lat)).y + ')'
               else
                 'translate(' + d.x + ',' + d.y + ')'
             )
             link.attr('x1', (d) =>
-            d.source.x
+              d.source.x
             ).attr('y1', (d) =>
               d.source.y
             ).attr('x2', (d) ->
@@ -328,7 +374,7 @@ application.module 'GraphModule', (GraphModule, App, Backbone, Marionette, $, _)
               else
                 d.target.y
           catch e
-            
+            console.log "eror", e
           return
         
         @force.on 'start', =>
@@ -352,7 +398,7 @@ application.module 'GraphModule', (GraphModule, App, Backbone, Marionette, $, _)
         inertiaDeceleration: 4000
         animate: false
         duration: 1.75
-        zoomControl: false
+        # zoomControl: false
         infoControl: false
         easeLinearity: 0.1
         )
@@ -417,9 +463,11 @@ application.module 'GraphModule', (GraphModule, App, Backbone, Marionette, $, _)
         if @_nodes
           text = []
           for key, value of @_nodes            
-            if value.group in [0..3]
+            if value.group in [1..4]
+              console.log value.group
             
             else  
+              console.log value.group
               text.push {name: value.name, id: value.index, group: value.group}
         # else
         #   text = GraphModule.getAllNodes()

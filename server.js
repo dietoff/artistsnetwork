@@ -141,7 +141,7 @@
   ArtistSchema.methods.findLimited = function(cb) {
     var query;
     query = this.model('Artist').find({});
-    query.limit(100);
+    query.limit();
     return query.exec(cb);
   };
 

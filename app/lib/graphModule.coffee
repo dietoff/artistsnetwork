@@ -44,6 +44,7 @@ application.module 'GraphModule', (GraphModule, App, Backbone, Marionette, $, _)
               ).style("stroke", (d) =>
                 return @color(sourceNode.id)
               ).style("fill", (d) =>
+                console.log d
                 return @color(sourceNode.id)
               ).style("stroke-width", 0
               # ).transition().duration(0
@@ -260,9 +261,9 @@ application.module 'GraphModule', (GraphModule, App, Backbone, Marionette, $, _)
         # some basic example http://jsfiddle.net/simonraper/bpKG4/light/
         vis = @vis = d3.select('.graph').append('svg:svg').attr('width', w).attr('height', h)
         force = @force = d3.layout.force(
-        ).gravity(.2
-        ).linkDistance(100
-        ).charge(-80
+        ).gravity(.5
+        ).linkDistance(80
+        # ).charge(-80
         ).size([
           w
           h
@@ -281,22 +282,23 @@ application.module 'GraphModule', (GraphModule, App, Backbone, Marionette, $, _)
         _artistNodes = @_nodes
         nodeEnter = node.enter().append('g').attr('class', 'node').call(@force.drag)
         nodeEnter.append('circle').property("id", (d, i) => "node-#{i}").attr('r', (d) ->
-          if d.group
-            return 0
+          if d.group in [0..3]
+            return 2
           else
             return 0
+        ).attr('x', '-1px').attr('y', '-1px').attr('width', '4px').attr('height', '4px'
         ).style("opacity", 0.6).style('fill', (d) =>
           if d.group 
-            return "none"# color(d.group)
+            return color(d.group)
           else
             return "node"
-        ).attr('x', '-1px').attr('y', '-1px').attr('width', '4px').attr 'height', '4px'
+        )
         nodeEnter.append('text').attr('class', 'nodetext').attr('dx', 12).attr('dy', '.35em').style("opacity", 0).attr("fill", (d, i) ->
           return "gray" #color(i)
         ).attr('id', (d,i) ->
           return i
         ).text (d) ->
-          if d.group is 1
+          if d.group in [0..3]
             return d.name# color(d.group)
 
         node.exit().remove()
@@ -304,26 +306,29 @@ application.module 'GraphModule', (GraphModule, App, Backbone, Marionette, $, _)
 
         @noFollowLinks = true
         @force.on 'tick', =>
-          link.attr('x1', (d) =>
+          try
+            node.attr('transform', (d) =>
+              if d.group == 1
+                'translate(' + _m.latLngToLayerPoint(L.latLng(d.long, d.lat)).x + ',' + _m.latLngToLayerPoint(L.latLng(d.long, d.lat)).y + ')'
+              else
+                'translate(' + d.x + ',' + d.y + ')'
+            )
+            link.attr('x1', (d) =>
             d.source.x
-          ).attr('y1', (d) =>
-            d.source.y
-          ).attr('x2', (d) ->
-            if d.target.long and (document.getElementById("line-#{d.source.index}")) and $("#line-#{d.source.index}").position().top < 1000 and $("#line-#{d.source.index}").position().top > 15
-              _m.latLngToLayerPoint(L.latLng(d.target.long, d.target.lat)).x
-            else
-              d.target.x
-          ).attr 'y2', (d) ->
-            if d.target.long and (document.getElementById("line-#{d.source.index}")) and $("#line-#{d.source.index}").position().top < 1000 and $("#line-#{d.source.index}").position().top > 15
-              _m.latLngToLayerPoint(L.latLng(d.target.long, d.target.lat)).y
-            else
-              d.target.y
-          node.attr('transform', (d) =>
-            if d.group == 1
-              'translate(' + _m.latLngToLayerPoint(L.latLng(d.long, d.lat)).x + ',' + _m.latLngToLayerPoint(L.latLng(d.long, d.lat)).y + ')'
-            else
-              'translate(' + d.x + ',' + d.y + ')'
-          )
+            ).attr('y1', (d) =>
+              d.source.y
+            ).attr('x2', (d) ->
+              if d.target.long and (document.getElementById("line-#{d.source.index}")) and $("#line-#{d.source.index}").position().top < 1000 and $("#line-#{d.source.index}").position().top > 15
+                _m.latLngToLayerPoint(L.latLng(d.target.long, d.target.lat)).x
+              else
+                d.target.x
+            ).attr 'y2', (d) ->
+              if d.target.long and (document.getElementById("line-#{d.source.index}")) and $("#line-#{d.source.index}").position().top < 1000 and $("#line-#{d.source.index}").position().top > 15
+                _m.latLngToLayerPoint(L.latLng(d.target.long, d.target.lat)).y
+              else
+                d.target.y
+          catch e
+            
           return
         
         @force.on 'start', =>
@@ -379,7 +384,7 @@ application.module 'GraphModule', (GraphModule, App, Backbone, Marionette, $, _)
 
 
   GraphModule.makeDivList = ($el, Width, Height, _margin, text)->
-        console.log $el
+        # console.log $el
         # L.DomUtil.removeClass(L.DomUtil.get("region-bios"), "col-md-2")
         # L.DomUtil.removeClass(L.DomUtil.get("map-region"), "col-md-12")
         try
@@ -404,17 +409,22 @@ application.module 'GraphModule', (GraphModule, App, Backbone, Marionette, $, _)
         
         id = 0
         @artistBios = []
-        for bios in text
+        # for bios in text
           # make a list of artist names when data arrives and keep it
           # @artistNodes.push {'name' :artist.source, 'id': id, 'group': artist.group}
-          id = id + 1
+          # id = id + 1
         # text = []
         if @_nodes
+          text = []
           for key, value of @_nodes            
-            text.push {name: value.name, id: value.index, group: value.group}
+            if value.group in [0..3]
+            
+            else  
+              text.push {name: value.name, id: value.index, group: value.group}
         # else
         #   text = GraphModule.getAllNodes()
-        @_text = text
+        else
+          @_text = text
         @_m = GraphModule.getMap()  
         # create the control container with a particular class name
 
@@ -430,7 +440,7 @@ application.module 'GraphModule', (GraphModule, App, Backbone, Marionette, $, _)
         @_textDomObj = $(L.DomUtil.get(@_textDomEl))
         @inWidth = $el[0].clientWidth/5
         @_textDomObj.css('width', $el[0].clientWidth)
-        @_textDomObj.css('height', "910px")
+        @_textDomObj.css('height', "700px")
         @_textDomObj.css('background-color', 'none')
         @_textDomObj.css('overflow', 'scroll')
         L.DomUtil.setOpacity(L.DomUtil.get(@_textDomEl), .8)
@@ -462,7 +472,7 @@ application.module 'GraphModule', (GraphModule, App, Backbone, Marionette, $, _)
             @artistBios.push {'name' :d.name, 'id': i}
             return "line-#{i}" 
         ).on("click", (d,i) ->
-          console.log "cliclk inside d3"
+          # console.log "cliclk inside d3"
           L.DomEvent.disableClickPropagation(this) 
           d3.select(this).transition().duration(0).style("color", "black").style("background-color", (d, i) ->
             "white"
@@ -474,7 +484,9 @@ application.module 'GraphModule', (GraphModule, App, Backbone, Marionette, $, _)
           
           return
         ).append("text").text((d,i) =>
-          if d.group isnt 1
+          if d.group in[0..3]
+
+          else
             @_leafletli = L.DomUtil.get("line-#{i}")
             timeout = undefined
             L.DomEvent.addListener @_leafletli, 'click', (e) =>

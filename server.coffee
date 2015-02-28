@@ -94,7 +94,7 @@ BiosSchema.methods.findLimited = (cb) ->
 
 ArtistSchema.methods.findLimited = (cb) ->
   query = @model('Artist').find({})
-  query.limit(100)
+  query.limit()
   query.exec cb
 
 ArtistSchema.methods.findByTarget = (cb) ->

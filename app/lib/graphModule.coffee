@@ -337,7 +337,6 @@ application.module 'GraphModule', (GraphModule, App, Backbone, Marionette, $, _)
 
 
   GraphModule.makeMap = ->
-    map = $("#map-region").append("<div id='map'></div>")
     L.mapbox.accessToken = "pk.eyJ1IjoiYXJtaW5hdm4iLCJhIjoiSTFteE9EOCJ9.iDzgmNaITa0-q-H_jw1lJw"
     @_m = L.mapbox.map("map", "arminavn.jhehgjan
       ",
@@ -368,6 +367,9 @@ application.module 'GraphModule', (GraphModule, App, Backbone, Marionette, $, _)
   GraphModule.getGraph = ->
     graph = @vis
     return graph
+  GraphModule.getForce = ->
+    force = @force
+    return force
   GraphModule.getMap = ->
     map = @_m
     return map
@@ -376,17 +378,37 @@ application.module 'GraphModule', (GraphModule, App, Backbone, Marionette, $, _)
     return @_text
 
 
-  GraphModule.makeDivList = ($el, Width, Height, _margin, text, @_m)->
+  GraphModule.makeDivList = ($el, Width, Height, _margin, text)->
+        console.log $el
         # L.DomUtil.removeClass(L.DomUtil.get("region-bios"), "col-md-2")
-        L.DomUtil.removeClass(L.DomUtil.get("map-region"), "col-md-12")
-        L.DomUtil.addClass(L.DomUtil.get("map-region"), "col-md-10")
+        # L.DomUtil.removeClass(L.DomUtil.get("map-region"), "col-md-12")
+        try
+          L.DomUtil.addClass(L.DomUtil.get("map-region"), "col-md-10")
+        catch e
+          
+          $("#content").html '<div class="row" id="main-content">
+                                <div class="row" >
+                                  <div id="switch" class="col-md-2 col-md-offset-2">
+                                    <span class="glyphicon-class"></span><a><span id="switch-icon" class="glyphicon glyphicon-cog">  </span></a>
+                                  </div>
+                                </div>
+                              <div class="row" >
+                                <div class="col-md-2" id="region-bios">
+                                </div>  
+                               <div class="col-md-12" id="map-region">
+                                <div class="col-md-6" id="region-graph">
+                                </div>
+                               </div>
+                              </div>'
+          $el = $('#main-content')        
+        
         id = 0
         @artistBios = []
         for bios in text
           # make a list of artist names when data arrives and keep it
           # @artistNodes.push {'name' :artist.source, 'id': id, 'group': artist.group}
           id = id + 1
-        text = []
+        # text = []
         if @_nodes
           for key, value of @_nodes            
             text.push {name: value.name, id: value.index, group: value.group}
@@ -406,23 +428,25 @@ application.module 'GraphModule', (GraphModule, App, Backbone, Marionette, $, _)
         L.DomUtil.enableTextSelection(@_textDomEl)  
         # @_m.getPanes().overlayPane.appendChild(@_textDomEl)
         @_textDomObj = $(L.DomUtil.get(@_textDomEl))
-        @inWidth = $(@_m.getContainer())[0].clientWidth/5
-        @_textDomObj.css('width', $(@_m.getContainer())[0].clientWidth/5)
-        @_textDomObj.css('height', $(@_m.getContainer())[0].clientHeight)
+        @inWidth = $el[0].clientWidth/5
+        @_textDomObj.css('width', $el[0].clientWidth)
+        @_textDomObj.css('height', "910px")
         @_textDomObj.css('background-color', 'none')
         @_textDomObj.css('overflow', 'scroll')
         L.DomUtil.setOpacity(L.DomUtil.get(@_textDomEl), .8)
 
         # here it needs to check to see if there is any vewSet avalable if not it should get it from the lates instance or somethign
         color = @color
-        @_viewSet = @_m.getCenter() if @_viewSet is undefined
+        # @_viewSet = @_m.getCenter() if @_viewSet is undefined
         @_d3text = d3.select(".paratext-info")
         .append("ul"
         ).style("list-style-type", "none"
         ).style("padding-left", "0px"
+        ).style('overflow', 'scroll'
         ).attr("id", "bios-list")
-        .attr("width", $(@_m.getContainer())[0].clientWidth/5 )
-        .attr("height", $(@_m.getContainer())[0].clientHeight)
+        .attr("width", $el[0].clientWidth)
+        .attr("height", $el[0].clientHeight)
+        # console.log text
         @_d3li = @_d3text
         .selectAll("li")
         .data(text)

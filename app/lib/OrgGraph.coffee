@@ -79,9 +79,9 @@ application.module 'OrgGraph', (OrgGraph, App, Backbone, Marionette, $, _) ->
       resetHighlightNodesBy: =>
         @vis.selectAll("circle").transition().duration(500).style("opacity", 0.6).attr("r", (d) ->
           if d.group == 2
-            return Math.sqrt(d.value) * 10
+            return Math.sqrt(d.value) * 5
           else 
-            return 10
+            return 5
         ).style("stroke-width", 1)
         @vis.selectAll("text.nodetext").transition().duration(500).style("opacity", 0)
       # write methods
@@ -209,10 +209,11 @@ application.module 'OrgGraph', (OrgGraph, App, Backbone, Marionette, $, _) ->
     # svg = d3.select('body').append('svg').attr('width', width).attr('height', height)
     svg = vis = @vis = d3.select('#content  ').append('svg:svg').attr('width', width).attr('height', width)
     force = @force = d3.layout.force(
-    ).gravity(.4
-    ).linkDistance(60
-    ).charge(-300
+    ).gravity(.6
+    ).linkDistance(50
+    ).charge(-150
     ).linkStrength(1
+    ).friction(0.9
     ).size([
       width
       height
@@ -233,13 +234,13 @@ application.module 'OrgGraph', (OrgGraph, App, Backbone, Marionette, $, _) ->
     color = @color
     _artistNodes = @_nodes
     nodes = _nodes
-    nodeEnter = node.enter().append('g').attr('class', 'node').attr("x", 14).attr("dy", ".35em").call(@force.drag)
+    nodeEnter = node.enter().append('g').attr('class', 'node').attr("x", 14).attr("dy", "5.35em").call(@force.drag)
     # nodeEnter.attr("class", "leaflet-zoom-hide")
     nodeEnter.append('circle').property("id", (d, i) => "node-#{i}").attr('r', (d) ->
       if d.group == 2
-        return Math.sqrt(d.value) * 10
+        return Math.sqrt(d.value) * 5
       else
-        return 10
+        return 5
     ).attr('x', '-1px').attr('y', '10px').attr('width', '4px').attr('height', '4px'
     ).style("stroke", "none"
     ).style("opacity", 0.6).style('fill', (d) =>
@@ -295,7 +296,6 @@ application.module 'OrgGraph', (OrgGraph, App, Backbone, Marionette, $, _) ->
         d.radius = i(t)
     
     # Move d to be adjacent to the cluster node.
-    console.log "clusters", clusters
     cluster = (alpha) ->
       (d) ->
         `var cluster`

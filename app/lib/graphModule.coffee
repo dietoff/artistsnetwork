@@ -113,12 +113,21 @@ application.module 'GraphModule', (GraphModule, App, Backbone, Marionette, $, _)
         L.DomUtil.setOpacity(L.DomUtil.get(@_bios_domEl), 0.75)
         @fx.run(L.DomUtil.get(@_bios_domEl), L.point(-$(@_m.getContainer())[0].clientWidth/3, 40), 0.5)
         if @biosFetched is undefined
+          console.log d
           textResponse = $.ajax
                       url: "http://localhost:3001/biosby/#{d.name}"
-                      success: (result) ->
+                      success: (result) =>
                         $el = $('#bios')
                         @biosTextResults = result
-      
+                        console.log result
+                        console.log L.DomUtil.get(@_bios_domEl)
+                        console.log @biosTextResults
+                        L.DomUtil.get(@_bios_domEl).innerHTML = ""
+                        L.DomUtil.get(@_bios_domEl).innerHTML += "#{@biosTextResults[0].FirstParagraph}"
+        else
+          console.log L.DomUtil.get(@_bios_domEl)
+        console.log @biosTextResults
+        
       makeOrgGraph: () =>
         console.log "makeOrgGraph inside GraphModule that should be removed"
 
@@ -433,7 +442,7 @@ application.module 'GraphModule', (GraphModule, App, Backbone, Marionette, $, _)
           inertiaDeceleration: 4000
           animate: false
           duration: 1.75
-          # zoomControl: false
+          zoomControl: false
           infoControl: false
           easeLinearity: 0.1
           )

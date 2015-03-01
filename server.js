@@ -173,7 +173,7 @@
     var query;
     query = this.model('Artist').find({});
     query.where('group', this.group);
-    query.limit();
+    query.limit(2000);
     return query.exec(cb);
   };
 

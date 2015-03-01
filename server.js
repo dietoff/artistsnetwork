@@ -177,6 +177,14 @@
     return query.exec(cb);
   };
 
+  BiosSchema.methods.findByName = function(cb) {
+    var query;
+    query = this.model('Bios').find({});
+    query.where('Name', this.Name);
+    query.limit();
+    return query.exec(cb);
+  };
+
   ArtistEdgesSchema.methods.findLimited = function(cb) {
     var query;
     query = this.model('ArtistEdges').find({});
@@ -222,6 +230,20 @@
     res.header('Access-Control-Allow-Headers', 'X-Requested-With');
     bios = Bios({});
     bios.findLimited(function(err, bios) {
+      return res.json(bios);
+    });
+  });
+
+  app.get('/biosby/:n', function(req, res) {
+    var bios;
+    res.header('Access-Control-Allow-Origin', '*');
+    res.header('Access-Control-Allow-Headers', 'X-Requested-With');
+    console.log("inside req this is n", req.params.n);
+    bios = Bios({
+      Name: req.params.n
+    });
+    bios.findByName(function(err, bios) {
+      console.log("bios by name", bios);
       return res.json(bios);
     });
   });

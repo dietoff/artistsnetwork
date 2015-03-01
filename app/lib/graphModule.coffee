@@ -112,6 +112,23 @@ application.module 'GraphModule', (GraphModule, App, Backbone, Marionette, $, _)
         ).style("stroke-width", 1)
         @vis.selectAll("text.nodetext").transition().duration(500).style("opacity", 0)
 
+
+      showBio: (d) =>
+        console.log "@_bios_domEl", @_bios_domEl
+        L.DomUtil.setOpacity(L.DomUtil.get(@_bios_domEl), 0.75)
+        @fx.run(L.DomUtil.get(@_bios_domEl), L.point(-$(@_m.getContainer())[0].clientWidth/3, 40), 0.5)
+        console.log d
+        if @biosFetched is undefined
+          textResponse = $.ajax
+                      url: "http://localhost:3001/biosby/#{d.name}"
+                      success: (result) ->
+                        $el = $('#bios')
+                        console.log result
+                        @biosTextResults = result
+        # else 
+          # console.log @biosTextResults
+
+
       # startForce: =>
       #   console.log "@force start", @force
       #   @force.start()
@@ -130,6 +147,7 @@ application.module 'GraphModule', (GraphModule, App, Backbone, Marionette, $, _)
       "resetHighlightLinksBy" : "resetHighlightLinksBy"
       "highlightNodesBy" : "highlightNodesBy"
       "resetHighlightNodesBy" : "resetHighlightNodesBy"
+      "showBio" : "showBio"
 
   API = 
 
@@ -153,6 +171,9 @@ application.module 'GraphModule', (GraphModule, App, Backbone, Marionette, $, _)
 
     stopForce: () ->
       GraphModule.Controller.stopForce()      
+
+    showBio: (d) ->
+      GraphModule.Controller.showBio(d)
 
   App.addInitializer ->
     new GraphModule.Router
@@ -189,6 +210,28 @@ application.module 'GraphModule', (GraphModule, App, Backbone, Marionette, $, _)
         id = id + 1
       @artistNodes = artistNodes
     return @artistNodes
+
+  GraphModule.makeBioController = ->
+    console.log "inside make bio controller"
+    divControl = L.Control.extend(  
+      initialize: =>
+        position = "left"
+        _domEl = L.DomUtil.create('div', "container " + "bioController" + "-info")
+        L.DomUtil.enableTextSelection(_domEl)  
+        @_m.getContainer().getElementsByClassName("leaflet-control-container")[0].appendChild(_domEl)
+        _domObj = $(L.DomUtil.get(_domEl))
+        _domObj.css('width', $(@_m.getContainer())[0].clientWidth/3)
+        _domObj.css('height', $(@_m.getContainer())[0].clientHeight/3)
+        _domObj.css('background-color', 'white')
+        L.DomUtil.setOpacity(L.DomUtil.get(_domEl), 0.0)
+        L.DomUtil.setPosition(L.DomUtil.get(_domEl), L.point(-$(@_m.getContainer())[0].clientWidth/1.2, 0), disable3D=0)
+        @fx = new L.PosAnimation()
+        @fx.run(L.DomUtil.get(_domEl), position, 0.9)
+        @_bios_domEl = _domEl
+        @_d3BiosEl = d3.select(_domEl)
+    )
+    new divControl()
+    return #_domEl
 
   GraphModule.makeGraph = ->
     @$el = $('graph-map')
@@ -510,15 +553,17 @@ application.module 'GraphModule', (GraphModule, App, Backbone, Marionette, $, _)
         .data(text)
         .enter()
         .append("li")
-        @_d3li.style("font-family", "Helvetica")
-        .style("line-height", "2")
-        .style("border", "0px solid gray")
+        @_d3li.style("font-family", "Gill Sans").style("font-size", "12px")
+        .style("line-height", "1")
+        .style("border", "0px solid black")
         .style("margin-top", "20px")
         .style("padding-right", "20px")
         .style("padding-left", "40px")
         .attr("id", (d, i) =>
             @artistBios.push {'name' :d.name, 'id': i}
             return "line-#{i}" 
+        ).on("mouseover", (d) ->
+          $(this).css('cursor','pointer')
         ).on("click", (d,i) ->
           # console.log "cliclk inside d3"
           L.DomEvent.disableClickPropagation(this) 
@@ -549,6 +594,7 @@ application.module 'GraphModule', (GraphModule, App, Backbone, Marionette, $, _)
                 if timeout isnt 0 
                   timeout = 0
                   GraphModule.Controller.highlightNodesBy(d)
+                  GraphModule.Controller.showBio(d)
               , 600)
               return 
             , ->
@@ -585,8 +631,8 @@ application.module 'GraphModule', (GraphModule, App, Backbone, Marionette, $, _)
 
             #   return
             d.name
-        ).style("font-size", "14px"
-        ).style("color", "rgb(72,72,72)" 
+        ).style("font-family", "Gill Sans").style("font-size", "14px"
+        ).style("color", "black"
         ).transition().duration(1).delay(1).style("opacity", 1
         )
 

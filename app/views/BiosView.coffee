@@ -10,7 +10,8 @@ module.exports = class BiosView extends Backbone.Marionette.LayoutView
 	template: 'views/templates/bios'
 	id: 'bios'
 	$el: $('#bios')
-	ui: 'li': '.li'
+	ui: 'name': '#bio-list'
+	# triggers: 'click @ui.name' : 'name:do:bio'
 	# events: 'mouseover @ui.li': 'showBio'
 	# triggers: 'mouseover @ui.li': 'show:bio'
 	# shoud be bios- if used
@@ -33,13 +34,15 @@ module.exports = class BiosView extends Backbone.Marionette.LayoutView
                     success: (result) ->
                     	$el = $('#bios')
                     	console.log result
-                    	application.GraphModule.makeDivList($el, Width, Height, _margin, result)	
+                    	application.GraphModule.makeDivList($el, Width, Height, _margin, result)
+                    	application.GraphModule.makeBioController()	
 				    	return
                 # text = textResponse.complete()
                 # text.done =>
                 	# console.log text
                 	# console.log text.responseJSON
-					
+		# @on "name:do:bio", =>
+		# 	console.log "click on name on bioView"
 		
 				
 		

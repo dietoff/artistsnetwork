@@ -22,14 +22,13 @@ application.module 'GraphModule', (GraphModule, App, Backbone, Marionette, $, _)
                 d.name == link.target.name
                 # selectedNodes.push 'lat': +d.lat, 'long': +d.long if d.name == link.target.name
               ).on("click", (d, i) =>
-                console.log  "click. d i ", d, i
               ).transition().duration(1
               ).style("opacity", 0.5
               ).attr("r", 5
               ).style("fill", (d) =>
-                return @color(sourceNode.id)
+                return @color(1)# @color(sourceNode.id)
               ).style("stroke", (d) =>
-                return @color(sourceNode.id)
+                return  @color(1)# @color(sourceNode.id)
               ).style("stroke-width", 4
               ).text( (d, i) =>
                 _leafletli = L.DomUtil.get("node-#{i}")
@@ -38,10 +37,8 @@ application.module 'GraphModule', (GraphModule, App, Backbone, Marionette, $, _)
                   # d3.selectAll(nodeEnter[0]).style("color", "black").style("background-color", "white"
                   # ).style "opacity", 1
                   timeout = 0
-                  console.log "click inside leaflet listener"
                   timeout = setTimeout(->
                     # 
-                    # console.log @
                     # @_m._initPathRoot()
                     if timeout isnt 0 
                       timeout = 0
@@ -57,17 +54,16 @@ application.module 'GraphModule', (GraphModule, App, Backbone, Marionette, $, _)
               ).style("opacity", 1
               ).attr("r", 20
               ).style("stroke", (d) =>
-                return @color(sourceNode.id)
+                return  @color(1) #@color(sourceNode.id)
               # ).style("fill", (d) =>
               #   return "none"
               ).style("stroke-width", 1
               ).transition().delay(50).duration(200
               ).attr("r", 10
               ).style("stroke", (d) =>
-                return @color(sourceNode.id)
+                return @color(1)# @color(sourceNode.id)
               ).style("fill", (d) =>
-                console.log d
-                return @color(sourceNode.id)
+                return @color(1)#@color(sourceNode.id)
               ).style("stroke-width", 0
               # ).transition().duration(0
               # ).style("opacity", 0.8
@@ -114,27 +110,27 @@ application.module 'GraphModule', (GraphModule, App, Backbone, Marionette, $, _)
 
 
       showBio: (d) =>
-        console.log "@_bios_domEl", @_bios_domEl
         L.DomUtil.setOpacity(L.DomUtil.get(@_bios_domEl), 0.75)
         @fx.run(L.DomUtil.get(@_bios_domEl), L.point(-$(@_m.getContainer())[0].clientWidth/3, 40), 0.5)
-        console.log d
         if @biosFetched is undefined
           textResponse = $.ajax
                       url: "http://localhost:3001/biosby/#{d.name}"
                       success: (result) ->
                         $el = $('#bios')
-                        console.log result
                         @biosTextResults = result
-        # else 
-          # console.log @biosTextResults
+      
+      makeOrgGraph: () =>
+        console.log "makeOrgGraph inside GraphModule that should be removed"
 
+      allNodes: () =>
+        return @_nodes
 
+      allLinks: () =>
+        return @_links
       # startForce: =>
-      #   console.log "@force start", @force
       #   @force.start()
 
       # stopForce: =>
-      #   console.log @force
       #   @force.stop()
 
       # write methods
@@ -212,7 +208,6 @@ application.module 'GraphModule', (GraphModule, App, Backbone, Marionette, $, _)
     return @artistNodes
 
   GraphModule.makeBioController = ->
-    console.log "inside make bio controller"
     divControl = L.Control.extend(  
       initialize: =>
         position = "left"
@@ -322,7 +317,6 @@ application.module 'GraphModule', (GraphModule, App, Backbone, Marionette, $, _)
 
         # setup the color scale
         @color = d3.scale.category10()
-        # console.log color
         # some basic example http://jsfiddle.net/simonraper/bpKG4/light/
         vis = @vis = d3.select('.graph').append('svg:svg').attr('width', w).attr('height', h)
         force = @force = d3.layout.force(
@@ -356,7 +350,7 @@ application.module 'GraphModule', (GraphModule, App, Backbone, Marionette, $, _)
         ).style("stroke", "none"
         ).style("opacity", 0.6).style('fill', (d) =>
           if d.group 
-            return color(d.group)
+            return @color(1)  #(d.group)
           else
             return "node"
         )
@@ -372,10 +366,8 @@ application.module 'GraphModule', (GraphModule, App, Backbone, Marionette, $, _)
               # d3.selectAll(nodeEnter[0]).style("color", "black").style("background-color", "white"
               # ).style "opacity", 1
               timeout = 0
-              console.log "click inside leaflet listener"
               timeout = setTimeout(->
                 # 
-                # console.log @
                 # @_m._initPathRoot()
                 if timeout isnt 0 
                   timeout = 0
@@ -417,7 +409,6 @@ application.module 'GraphModule', (GraphModule, App, Backbone, Marionette, $, _)
               else
                 d.target.y
           catch e
-            console.log "eror", e
           return
         
         @force.on 'start', =>
@@ -432,19 +423,22 @@ application.module 'GraphModule', (GraphModule, App, Backbone, Marionette, $, _)
 
   GraphModule.makeMap = ->
     L.mapbox.accessToken = "pk.eyJ1IjoiYXJtaW5hdm4iLCJhIjoiSTFteE9EOCJ9.iDzgmNaITa0-q-H_jw1lJw"
-    @_m = L.mapbox.map("map", "arminavn.jhehgjan
-      ",
-        zoomAnimation: false
-        dragAnimation: false
-        attributionControl: false
-        zoomAnimationThreshold: 10
-        inertiaDeceleration: 4000
-        animate: false
-        duration: 1.75
-        # zoomControl: false
-        infoControl: false
-        easeLinearity: 0.1
-        )
+    try 
+      @_m = L.mapbox.map("map", "arminavn.jhehgjan
+        ",
+          zoomAnimation: false
+          dragAnimation: false
+          attributionControl: false
+          zoomAnimationThreshold: 10
+          inertiaDeceleration: 4000
+          animate: false
+          duration: 1.75
+          # zoomControl: false
+          infoControl: false
+          easeLinearity: 0.1
+          )
+    catch
+      $("#map-region").append("<div id='map'></div>")
     @_m.setView([
               42.34
               0.12
@@ -473,7 +467,6 @@ application.module 'GraphModule', (GraphModule, App, Backbone, Marionette, $, _)
 
 
   GraphModule.makeDivList = ($el, Width, Height, _margin, text)->
-        # console.log $el
         # L.DomUtil.removeClass(L.DomUtil.get("region-bios"), "col-md-2")
         # L.DomUtil.removeClass(L.DomUtil.get("map-region"), "col-md-12")
         try
@@ -507,10 +500,8 @@ application.module 'GraphModule', (GraphModule, App, Backbone, Marionette, $, _)
           text = []
           for key, value of @_nodes            
             if value.group in [1..4]
-              console.log value.group
             
             else  
-              console.log value.group
               text.push {name: value.name, id: value.index, group: value.group}
         # else
         #   text = GraphModule.getAllNodes()
@@ -547,7 +538,6 @@ application.module 'GraphModule', (GraphModule, App, Backbone, Marionette, $, _)
         ).attr("id", "bios-list")
         .attr("width", $el[0].clientWidth)
         .attr("height", $el[0].clientHeight)
-        # console.log text
         @_d3li = @_d3text
         .selectAll("li")
         .data(text)
@@ -565,14 +555,13 @@ application.module 'GraphModule', (GraphModule, App, Backbone, Marionette, $, _)
         ).on("mouseover", (d) ->
           $(this).css('cursor','pointer')
         ).on("click", (d,i) ->
-          # console.log "cliclk inside d3"
           L.DomEvent.disableClickPropagation(this) 
           d3.select(this).transition().duration(0).style("color", "black").style("background-color", (d, i) ->
             "white"
           ).style "opacity", 1
           d3.select(this).transition().duration(1000).style("color", "rgb(72,72,72)").style("background-color", (d, i) =>
             id = d3.select(this).attr("id").replace("line-", "")
-            return color(id)
+            return color(1) # color(id)
           ).style("opacity", 1)
           
           return

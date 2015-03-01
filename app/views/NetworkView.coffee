@@ -12,8 +12,8 @@ module.exports = class NetworkView extends Backbone.Marionette.LayoutView
 	template: 'views/templates/network'
 	id: 'main-content'
 	$el: $('#main-content')
-	ui: 'switch' : '#switch-icon'
-	triggers: 'click @ui.switch' : 'switch:do:view'
+	ui: 'switch-organization' : '#organization'
+	triggers: 'click @ui.switch-organization' : 'switch-organization:do:view'
 	# el: 'div'
 	# setup two primary regions 
 	regions:
@@ -22,6 +22,7 @@ module.exports = class NetworkView extends Backbone.Marionette.LayoutView
 		regionGraph: "#region-graph"
 	initialize: ->
 		@regionManager.addRegions @regions
+		# application.module("HeaderFooter").start()
 	onShow: ->
 		$(document).ready =>
 			
@@ -47,22 +48,20 @@ module.exports = class NetworkView extends Backbone.Marionette.LayoutView
 		console.log application
 		# do when view is rendered
 		# @regionManager.addRegions @regions
-		@on "switch:do:view", =>
-			console.log @regionGraph
-			console.log @, this
-			console.log _this
-			@remove(@graphView)
+		@on "switch-organization:do:view", =>
+			console.log "switch-organization trigger"
+			# @remove(@graphView)
 			# @getRegion('content').show(@networkView)
 			# @regionBios.show(@graphView)
 			@biosView = new BiosView()			
 			@regionBios.show(@biosView)
 			@orgGraphView = new OrgGraphView()
 			@regionGraph.show(@orgGraphView)
+			application.GraphModule.Controller.makeOrgGraph()
 		@biosView = new BiosView()
 		@graphView = new GraphView()
 		@regionGraph.show(@graphView)
 		@regionBios.show(@biosView)
-	
 		
 
 

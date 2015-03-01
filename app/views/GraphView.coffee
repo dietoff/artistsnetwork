@@ -36,18 +36,18 @@ module.exports = class GraphView extends Backbone.Marionette.ItemView
 			# else
 	
 	onShow: ->
-		if application.GraphModule.getGraph() is undefined
-			application.GraphModule.makeGraph()
+		# if application.GraphModule.getGraph() is undefined
+		application.GraphModule.makeGraph()
 		@_m = application.GraphModule.getMap()
 		map = $("#map-region").append("<div id='map'></div>")
 		# console.log "size", $("body")[0].clientHeight
 		# $("#map").css("height", $("body")[0].clientHeight)
-		if application.GraphModule.getMap() is undefined
-			application.GraphModule.makeMap()
+		# if application.GraphModule.getMap() is undefined
+		
 		# application.Butterfly.start()
 		# application.Butterfly.makeButterfly()
 		$(document).ready =>
-			
+			application.GraphModule.makeMap()	
 			
 
 

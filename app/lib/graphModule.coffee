@@ -16,10 +16,12 @@ application.module 'GraphModule', (GraphModule, App, Backbone, Marionette, $, _)
         @vis.selectAll("line").style("opacity", 0.2)
 
       highlightNodesBy: (sourceNode) =>
+        selectedNodes = []
         @_links.forEach (link) => 
             if link.source.name == sourceNode.name
               @vis.selectAll("circle").filter((d, i) =>
                 d.name == link.target.name
+                selectedNodes.push 'lat': +d.lat, 'long': +d.long if d.name == link.target.name
               ).transition().duration(200
               ).style("opacity", 0.9
               ).attr("r", 5
@@ -29,6 +31,32 @@ application.module 'GraphModule', (GraphModule, App, Backbone, Marionette, $, _)
               )
               return 
             return
+        @force.stop()
+        console.log "selectedNodes", selectedNodes
+        lats = [] 
+        longs = []
+        selectedNodes.forEach (d) =>
+          lats.push d.lat
+          longs.push d.long
+        # nodesList = [selectedNodes.forEach ()]
+        minlat = d3.min(lats)
+        minlong = d3.min(longs)
+        maxlat = d3.max(lats)
+        maxlong = d3.max(longs)
+        sw = [minlat, minlong]
+        ne = [maxlat, maxlong]
+        console.log sw, ne
+
+        # if @_m.getBounds().contains([sw, ne]) is false
+        @_m.fitBounds([sw, ne], {pan: {animate: false}})
+        # else
+          # @_m.fitBounds([sw, ne], {pan: {animate: false}})
+          # @_mm.setView(center, zoom, {pan: {animate: false}});
+        onSetView: (map) =>
+          @force.start()
+        # @_m.whenReady =>
+        #   @force.start()
+
         return
       resetHighlightNodesBy: =>
         @vis.selectAll("circle").style("opacity", 0.6).attr("r", (d) ->
@@ -261,7 +289,7 @@ application.module 'GraphModule', (GraphModule, App, Backbone, Marionette, $, _)
                 if this.ifControl 
                   $("#line-#{d.source.index}").position().left + @inWidth
                 else
-                  $("#map").position().left + offset.x/2
+                  $("#map").position().left + offset.x/3
               # $("#line-#{value.id}").position().left
               # line = d3.select(document.getElementById("line-#{value.id}"))
         #       #   'translate(' + L.DomUtil.getViewportOffset(document.getElementById("line-#{value.id}")).x+ ',' + L.DomUtil.getViewportOffset(document.getElementById("line-#{value.id}")).y + ')'
@@ -306,8 +334,8 @@ application.module 'GraphModule', (GraphModule, App, Backbone, Marionette, $, _)
           )
           return
         
-        # @force.on 'start', =>
-        #   @force.tick()
+        @force.on 'start', =>
+          @force.tick()
 
         @force.start()
         # L.DomUtil.addClass(_textDomEl, "leaflet-control-container")
@@ -318,13 +346,14 @@ application.module 'GraphModule', (GraphModule, App, Backbone, Marionette, $, _)
   GraphModule.makeMap = ->
     map = $("#map-region").append("<div id='map'></div>")
     L.mapbox.accessToken = "pk.eyJ1IjoiYXJtaW5hdm4iLCJhIjoiSTFteE9EOCJ9.iDzgmNaITa0-q-H_jw1lJw"
-    @_m = L.mapbox.map("map", "arminavn.l5loig7e
+    @_m = L.mapbox.map("map", "arminavn.jhehgjan
       ",
-        zoomAnimation: true
+        zoomAnimation: false
+        dragAnimation: false
         attributionControl: false
-        zoomAnimationThreshold: 4
+        zoomAnimationThreshold: 10
         inertiaDeceleration: 4000
-        animate: true
+        animate: false
         duration: 1.75
         zoomControl: true
         infoControl: false
@@ -337,7 +366,7 @@ application.module 'GraphModule', (GraphModule, App, Backbone, Marionette, $, _)
     @_m.boxZoom.enable()
     @_m.scrollWheelZoom.disable()
     @_m.dragging.disable()
-    @_m.on 'zoomstart dragstart', =>
+    @_m.on 'zoomstart', =>
       @force.stop()
     @_m.on 'zoomend dragend', =>
       @force.start()
@@ -565,7 +594,6 @@ application.module 'GraphModule', (GraphModule, App, Backbone, Marionette, $, _)
             return "line-#{i}" 
         ).on("mouseover", (d,i) ->
           GraphModule.Controller.highlightLinksBy(d)
-          GraphModule.Controller.highlightNodesBy(d)
           $(this).css('cursor','pointer')
           d3.select(this).transition().duration(0).style("color", "black").style("background-color", "rgb(208,208,208) ").style "opacity", 1
           # L.DomEvent.disableClickPropagation(this) 
@@ -579,14 +607,14 @@ application.module 'GraphModule', (GraphModule, App, Backbone, Marionette, $, _)
           
           return
         ).on("click", (d,i) =>
-          @force.stop()
+          # @force.stop()
           # d3.select(this).transition().duration(10).style("color", "rgb(72,72,72)").style("background-color", "rgb(208,208,208) ").style "opacity", 1
           # GraphModule.Controller.resetHighlightLinksBy()
           # GraphModule.Controller.resetHighlightNodesBy()
           # GraphModule.Controller.highlightLinksBy(d)
           # GraphModule.Controller.highlightNodesBy(d)
           # d3.select(this).transition().duration(2000).style("color", "rgb(72,72,72)").style("background-color", "white").style "opacity", 1
-          @force.resume()
+          # @force.resume()
           # L.DomEvent.disableClickPropagation(this) 
           
           return
@@ -595,8 +623,8 @@ application.module 'GraphModule', (GraphModule, App, Backbone, Marionette, $, _)
             @_leafletli = L.DomUtil.get("line-#{i}")
             timeout = undefined
             L.DomEvent.addListener @_leafletli, 'click', (e) =>
-              @force.stop()
-              @force.resume()
+              # @force.stop()
+              # @force.resume()
               timeout = 0
               
               # @force.resume()
@@ -624,6 +652,7 @@ application.module 'GraphModule', (GraphModule, App, Backbone, Marionette, $, _)
               # Animation complete.
               )
             L.DomEvent.addListener @_leafletli, 'mouseover', (e) ->
+              _this.force.stop()
               $(this).css('cursor','pointer')
               e.stopPropagation()
               # App.vent.trigger 'addNodes', d
@@ -631,12 +660,13 @@ application.module 'GraphModule', (GraphModule, App, Backbone, Marionette, $, _)
               # linkedTo = App.vent.trigger 'getLinksBy', d
 
               timeout = setTimeout(->
-                _this.force.stop()
+                # 
                 _this._m._initPathRoot()
                 if timeout isnt 0 
                   timeout = 0
+                  GraphModule.Controller.highlightNodesBy(d)
               , 900)
-              _this.force.resume()
+              # _this.force.resume()
               return 
             , ->
 

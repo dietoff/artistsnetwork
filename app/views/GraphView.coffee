@@ -1,6 +1,6 @@
 # ArtistsModule = require 'lib/graphModule'
 application = require 'application'
-Butterfly = require 'lib/Butterfly'
+# Butterfly = require 'lib/Butterfly'
 module.exports = class GraphView extends Backbone.Marionette.ItemView
 	@startWithParent = false
 	template: 'views/templates/graph'
@@ -10,10 +10,7 @@ module.exports = class GraphView extends Backbone.Marionette.ItemView
 	links: []
 	
 	initialize: ->
-		# console.log "size", $("body")[0].clientHeight
-		# $("#map").css("height", $("body")[0].clientHeight)
-		if application.GraphModule.getMap() is undefined
-			application.GraphModule.makeMap()
+
 	onThisArtist: (node) =>
 		# console.log "onThisArtist"
 		# _thisNode = $("#"+"node-#{node}")
@@ -39,10 +36,18 @@ module.exports = class GraphView extends Backbone.Marionette.ItemView
 			# else
 	
 	onShow: ->
-		application.Butterfly.start()
-		application.Butterfly.makeButterfly()
+		# if application.GraphModule.getGraph() is undefined
+		application.GraphModule.makeGraph()
+		@_m = application.GraphModule.getMap()
+		map = $("#map-region").append("<div id='map'></div>")
+		# console.log "size", $("body")[0].clientHeight
+		# $("#map").css("height", $("body")[0].clientHeight)
+		# if application.GraphModule.getMap() is undefined
+		
+		# application.Butterfly.start()
+		# application.Butterfly.makeButterfly()
 		$(document).ready =>
-			
+			application.GraphModule.makeMap()	
 			
 
 

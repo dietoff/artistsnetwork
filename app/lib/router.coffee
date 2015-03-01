@@ -5,6 +5,7 @@ BiosView = require('views/BiosView')
 GraphView = require('views/GraphView')
 BiosModel = require 'models/biosModel'
 BiosCollection = require 'models/biosCollection'
+OrganizationView = require 'views/OrgGraphView'
 # Bios = new BiosCollection
 # Create a Controller, giving it the callbacks for our Router.
 # MyController = Marionette.Controller.extend(
@@ -77,7 +78,28 @@ module.exports = class Router extends Backbone.Marionette.AppRouter
 		offArtist: ->
 			@gv.offThisArtist()
 
-   		
+		organization: ->
+			@nv.remove(@graphView)
+			# biosView = new BiosView()			
+			# @nv.show(biosView)
+			# orgGraphView = new OrgGraphView()
+			# @nv.show(orgGraphView)
+			# console.log "reouter organization"
+			application.vent.trigger "organization"
+
+		location: ->
+			if @nv is undefined
+				@nv = new NetworkView()
+				application.layout.content.show(@nv)
+				@gv = new GraphView() 
+				@nv.regionGraph.show(@gv)
+			else if @gv is undefined
+				@gv = new GraphView() 
+				@nv.regionGraph.show(@gv)
+				if application.GraphModule.getGraph() is undefined
+					application.GraphModule.makeGraph()
+			application.vent.trigger "location"
+
 	)
 
 	ViewController = new ViewController
@@ -86,6 +108,6 @@ module.exports = class Router extends Backbone.Marionette.AppRouter
 		'': 'network'
 		'bios' : 'bios'
 		'graph/:node': 'addNodes'
-		'offArtist' : 'offArtist'
-	
-	
+		'offArtist' : 'offArtist'	
+		'organization' : 'organization'
+		'location' : 'location'

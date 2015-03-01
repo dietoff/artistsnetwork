@@ -94,7 +94,7 @@ BiosSchema.methods.findLimited = (cb) ->
 
 ArtistSchema.methods.findLimited = (cb) ->
   query = @model('Artist').find({})
-  query.limit(100)
+  query.limit(2000)
   query.exec cb
 
 ArtistSchema.methods.findByTarget = (cb) ->
@@ -117,8 +117,15 @@ ArtistNodesSchema.methods.findLimited = (cb) ->
 ArtistSchema.methods.findByGroup = (cb) ->
   query = @model('Artist').find({})
   query.where 'group', @group
+  query.limit(2000)
+  query.exec cb
+
+BiosSchema.methods.findByName = (cb) ->
+  query = @model('Bios').find({})
+  query.where 'Name', @Name
   query.limit()
   query.exec cb
+
 ArtistEdgesSchema.methods.findLimited = (cb) ->
   query = @model('ArtistEdges').find({})
   query.limit(200)
@@ -157,6 +164,16 @@ app.get '/bios', (req, res) ->
   bios.findLimited (err, bios) ->
     res.json bios
   return
+app.get '/biosby/:n', (req, res) ->
+  res.header 'Access-Control-Allow-Origin', '*'
+  res.header 'Access-Control-Allow-Headers', 'X-Requested-With'
+  console.log "inside req this is n", req.params.n
+  bios = Bios(Name: req.params.n)
+  bios.findByName (err, bios) ->
+    console.log "bios by name", bios
+    res.json bios
+  return
+
 app.get '/artists', (req, res) ->
   res.header 'Access-Control-Allow-Origin', '*'
   res.header 'Access-Control-Allow-Headers', 'X-Requested-With'

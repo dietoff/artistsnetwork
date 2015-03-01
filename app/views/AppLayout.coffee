@@ -6,4 +6,5 @@ module.exports = class AppLayout extends Backbone.Marionette.LayoutView
 
 	regions:
 		content: "#content"
+		header: "#header"
 				

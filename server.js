@@ -141,7 +141,7 @@
   ArtistSchema.methods.findLimited = function(cb) {
     var query;
     query = this.model('Artist').find({});
-    query.limit(100);
+    query.limit(2000);
     return query.exec(cb);
   };
 
@@ -173,6 +173,14 @@
     var query;
     query = this.model('Artist').find({});
     query.where('group', this.group);
+    query.limit(2000);
+    return query.exec(cb);
+  };
+
+  BiosSchema.methods.findByName = function(cb) {
+    var query;
+    query = this.model('Bios').find({});
+    query.where('Name', this.Name);
     query.limit();
     return query.exec(cb);
   };
@@ -222,6 +230,20 @@
     res.header('Access-Control-Allow-Headers', 'X-Requested-With');
     bios = Bios({});
     bios.findLimited(function(err, bios) {
+      return res.json(bios);
+    });
+  });
+
+  app.get('/biosby/:n', function(req, res) {
+    var bios;
+    res.header('Access-Control-Allow-Origin', '*');
+    res.header('Access-Control-Allow-Headers', 'X-Requested-With');
+    console.log("inside req this is n", req.params.n);
+    bios = Bios({
+      Name: req.params.n
+    });
+    bios.findByName(function(err, bios) {
+      console.log("bios by name", bios);
       return res.json(bios);
     });
   });

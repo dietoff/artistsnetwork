@@ -9,7 +9,10 @@ application.module 'HeaderFooter', (HeaderFooter, App, Backbone, Marionette, $, 
         return
       Location: =>
         application.ViewController.network()
-        
+        return
+      Person: =>
+        console.log "person in header modfu;e"
+        return
         
 
 
@@ -21,6 +24,7 @@ application.module 'HeaderFooter', (HeaderFooter, App, Backbone, Marionette, $, 
     appRoutes:
       "HeaderFooter" : "HeaderFooter"
       'location' : 'Location'
+      'person' : 'Person'
 
   API = 
 
@@ -30,6 +34,9 @@ application.module 'HeaderFooter', (HeaderFooter, App, Backbone, Marionette, $, 
     Location: () ->
       application.vent.trigger "network"
       
+    Person: () ->
+      application.vent.trigger "person"
+      # HeaderFooter.Controller.Person()
 
   HeaderFooter.addInitializer ->
     new HeaderFooter.Router

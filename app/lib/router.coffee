@@ -100,6 +100,8 @@ module.exports = class Router extends Backbone.Marionette.AppRouter
 					application.GraphModule.makeGraph()
 			application.vent.trigger "location"
 		
+		personView: ->
+			console.log "personview in ViewController"
 		
 	)
 
@@ -112,3 +114,4 @@ module.exports = class Router extends Backbone.Marionette.AppRouter
 		'offArtist' : 'offArtist'	
 		'organization' : 'organization'
 		'location' : 'location'
+		'person' : 'personView'

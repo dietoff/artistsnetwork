@@ -8,6 +8,7 @@ application.module 'HeaderFooter', (HeaderFooter, App, Backbone, Marionette, $, 
         console.log "makeHeaderFooter"
         return
       Location: =>
+        console.log "applicatoin in header router", application
         application.ViewController.network()
         return
       Person: =>

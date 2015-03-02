@@ -178,6 +178,8 @@ application.module 'OrgGraph', (OrgGraph, App, Backbone, Marionette, $, _) ->
   OrgGraph.someData = 'public data'
 
   OrgGraph.makeOrgGraph = () ->
+    $("svg").html("")
+    $("svg").css("height", "0px")
     # @_nodes = application.GraphModule.Controller.allNodes()
     # @_links = application.GraphModule.Controller.allLinks()
     width = $("#content")[0].clientWidth

@@ -44,8 +44,10 @@ module.exports = class Router extends Backbone.Marionette.AppRouter
 	ViewController = Marionette.Controller.extend(
 
 		network: ->
-   			@nv = new NetworkView()
-   			application.layout.content.show(@nv)
+			$("svg").html("")
+			$("svg").css("height", "0px")
+			@nv = new NetworkView()
+			application.layout.content.show(@nv)
 
 
 		bios: ->

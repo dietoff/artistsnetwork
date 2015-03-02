@@ -81,12 +81,17 @@ application.module 'PersonModule', (PersonModule, App, Backbone, Marionette, $, 
     
     console.log @
     console.log PersonModule
+    application.module("GraphModule").stop()
+    # application.layout.remove(application.GraphView)
+    application.layout.content.empty()
+    $("#content").html("")
     $("#content").append "<div id='person-graph'></div>"
     # console.log personView
     @layout = new PersonView()
     console.log application
     # application.layout.header.show("headerView")
     PersonModule.layout.render()
+
     
 
 

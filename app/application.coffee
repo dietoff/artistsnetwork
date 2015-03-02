@@ -50,6 +50,8 @@ class Application extends Backbone.Marionette.Application
                 Backbone.history.navigate "organization", trigger: false 
             @vent.on "person", () =>
                 console.log "preson in vent"
+                console.log @
+                @module("PersonModule").start()
                 # Backbone.history.navigate "", trigger: false
                 @module("PersonModule").start()
                 Backbone.history.navigate "person", trigger: false

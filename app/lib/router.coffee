@@ -99,7 +99,8 @@ module.exports = class Router extends Backbone.Marionette.AppRouter
 				if application.GraphModule.getGraph() is undefined
 					application.GraphModule.makeGraph()
 			application.vent.trigger "location"
-
+		
+		
 	)
 
 	ViewController = new ViewController

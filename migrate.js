@@ -21,3 +21,4 @@
 
 // mongoimport --db artistdb --collection artists --type csv --headerline combined_clean.csv
 // mongoimport --db artistdb --collection artists --type csv --headerline combined_clean_reduced.csv
+// mongoimport --db artistdb --collection samplebios --type csv --headerline mergedFILE.csv

@@ -88,6 +88,7 @@ module.exports = class Router extends Backbone.Marionette.AppRouter
 			application.vent.trigger "organization"
 
 		location: ->
+			console.log "application in ;ocation call"
 			if @nv is undefined
 				@nv = new NetworkView()
 				application.layout.content.show(@nv)
@@ -102,6 +103,9 @@ module.exports = class Router extends Backbone.Marionette.AppRouter
 		
 		personView: ->
 			console.log "personview in ViewController"
+			@nv.remove(@gv)
+			application.PersonModule.putPersonGraph()
+			# @nv.regionGraph.show()
 		
 	)
 

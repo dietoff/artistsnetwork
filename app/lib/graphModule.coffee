@@ -22,7 +22,7 @@ application.module 'GraphModule', (GraphModule, App, Backbone, Marionette, $, _)
             fillOpacity: 0.4
             weight: 2
             clickable: false
-          layer.setRadius(3)
+          # layer.setRadius(3)
           timeout = 0
           @markers.eachLayer (layer) =>
             layer.setStyle
@@ -66,7 +66,7 @@ application.module 'GraphModule', (GraphModule, App, Backbone, Marionette, $, _)
                           fillOpacity: 0.8
                           weight: 2
                           clickable: true
-                      layer.setRadius(7)
+                      # layer.setRadius(7)
                     return
                   )
                   # Animat
@@ -601,7 +601,7 @@ application.module 'GraphModule', (GraphModule, App, Backbone, Marionette, $, _)
       @force.stop()
     @_m.on 'zoomend dragend', =>
       @force.start()
-    @_m.on "dblclick", =>
+    @_m.on "click", =>
       @_m.setView([
               42.34
               0.12

@@ -98,7 +98,7 @@ BiosSchema.methods.findLimited = (cb) ->
 
 ArtistSchema.methods.findLimited = (cb) ->
   query = @model('Artist').find({})
-  query.limit(2000)
+  query.limit()
   query.exec cb
 
 ArtistSchema.methods.findByTarget = (cb) ->
@@ -121,7 +121,7 @@ ArtistNodesSchema.methods.findLimited = (cb) ->
 ArtistSchema.methods.findByGroup = (cb) ->
   query = @model('Artist').find({})
   query.where 'group', @group
-  query.limit(2000)
+  query.limit()
   query.exec cb
 
 BiosSchema.methods.findByName = (cb) ->
@@ -132,7 +132,7 @@ BiosSchema.methods.findByName = (cb) ->
 
 ArtistEdgesSchema.methods.findLimited = (cb) ->
   query = @model('ArtistEdges').find({})
-  query.limit(200)
+  query.limit()
   query.exec cb
 
 # declare mongoose models

@@ -145,7 +145,7 @@
   ArtistSchema.methods.findLimited = function(cb) {
     var query;
     query = this.model('Artist').find({});
-    query.limit(2000);
+    query.limit();
     return query.exec(cb);
   };
 
@@ -177,7 +177,7 @@
     var query;
     query = this.model('Artist').find({});
     query.where('group', this.group);
-    query.limit(2000);
+    query.limit();
     return query.exec(cb);
   };
 
@@ -192,7 +192,7 @@
   ArtistEdgesSchema.methods.findLimited = function(cb) {
     var query;
     query = this.model('ArtistEdges').find({});
-    query.limit(200);
+    query.limit();
     return query.exec(cb);
   };
 

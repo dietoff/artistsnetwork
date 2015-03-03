@@ -21,8 +21,13 @@ application.module 'GraphModule', (GraphModule, App, Backbone, Marionette, $, _)
             opacity: 0.4
             fillOpacity: 0.4
             weight: 2
+            clickable: false
           layer.setRadius(3)
           timeout = 0
+          @markers.eachLayer (layer) =>
+            layer.setStyle
+              opacity: 0.1
+              clickable: false
           setTimeout (->
             $(L.DomUtil.get(layer._container)).animate
               fillOpacity: 0.3
@@ -35,6 +40,10 @@ application.module 'GraphModule', (GraphModule, App, Backbone, Marionette, $, _)
         color = @color
         @_links.forEach (link) => 
             if link.source.name == sourceNode.name
+              @markers.eachLayer (layer) =>
+                layer.setStyle
+                  opacity: 0.6
+                  clickable: true
               @nodeGroup.eachLayer (layer) =>
                 # layer.setStyle
                 #     fillColor: color(link.target.group)
@@ -56,6 +65,7 @@ application.module 'GraphModule', (GraphModule, App, Backbone, Marionette, $, _)
                           # fillColor: d3.lab(color(link.target.group)).darker(3)
                           fillOpacity: 0.8
                           weight: 2
+                          clickable: true
                       layer.setRadius(7)
                     return
                   )
@@ -261,7 +271,7 @@ application.module 'GraphModule', (GraphModule, App, Backbone, Marionette, $, _)
         L.DomUtil.enableTextSelection(_domEl)  
         @_m.getContainer().getElementsByClassName("leaflet-control-container")[0].appendChild(_domEl)
         _domObj = $(L.DomUtil.get(_domEl))
-        _domObj.css('width', $(@_m.getContainer())[0].clientWidth/3)
+        _domObj.css('width', $(@_m.getContainer())[0].clientWidth/4)
         _domObj.css('height', $(@_m.getContainer())[0].clientHeight/1.3)
         _domObj.css('background-color', 'white')
         _domObj.css("font-family", "Gill Sans")
@@ -270,9 +280,13 @@ application.module 'GraphModule', (GraphModule, App, Backbone, Marionette, $, _)
         _domObj.css('line-height', '24px')
         L.DomUtil.setOpacity(L.DomUtil.get(_domEl), 0.0)
         L.DomUtil.setPosition(L.DomUtil.get(_domEl), L.point(-$(@_m.getContainer())[0].clientWidth/1.2, 0), disable3D=0)
+        @position = L.point(-$(@_m.getContainer())[0].clientWidth/1.05, 0)
         @fx = new L.PosAnimation()
         @fx.run(L.DomUtil.get(_domEl), position, 0.9)
         @_bios_domEl = _domEl
+        @_m.on "click", =>
+          @fx.run(L.DomUtil.get(_domEl), @position, 0.9)
+          console.log "click on map"
         @_d3BiosEl = d3.select(_domEl)
     )
     new divControl()
@@ -569,6 +583,7 @@ application.module 'GraphModule', (GraphModule, App, Backbone, Marionette, $, _)
           animate: true
           duration: 1.75
           zoomControl: false
+          doubleClickZoom: false
           infoControl: false
           easeLinearity: 0.1
           maxZoom: 5
@@ -586,6 +601,11 @@ application.module 'GraphModule', (GraphModule, App, Backbone, Marionette, $, _)
       @force.stop()
     @_m.on 'zoomend dragend', =>
       @force.start()
+    @_m.on "dblclick", =>
+      @_m.setView([
+              42.34
+              0.12
+            ], 3)
     return
 
   GraphModule.getGraph = ->

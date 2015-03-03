@@ -56,6 +56,13 @@ application.module 'HeaderFooter', (HeaderFooter, App, Backbone, Marionette, $, 
           $(document).ready =>
             @on "switch-organization:do:view", =>
             console.log "switch-organization trigger"
+          update = () ->  
+            inputvalue = $("searchinput").val()
+            console.log "this inout", inputvalue
+          update()
+          $('input').change update
+              
+            
             # @biosView = new BiosView()      
             # @regionBios.show(@biosView)
             # @orgGraphView = new OrgGraphView()

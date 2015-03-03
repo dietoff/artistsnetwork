@@ -265,9 +265,9 @@ application.module 'GraphModule', (GraphModule, App, Backbone, Marionette, $, _)
         _domObj.css('height', $(@_m.getContainer())[0].clientHeight/1.3)
         _domObj.css('background-color', 'white')
         _domObj.css("font-family", "Gill Sans")
-        _domObj.css("font-size", "16")
+        _domObj.css("font-size", "18")
         _domObj.css('overflow', 'auto')
-        _domObj.css('line-height', '22px')
+        _domObj.css('line-height', '24px')
         L.DomUtil.setOpacity(L.DomUtil.get(_domEl), 0.0)
         L.DomUtil.setPosition(L.DomUtil.get(_domEl), L.point(-$(@_m.getContainer())[0].clientWidth/1.2, 0), disable3D=0)
         @fx = new L.PosAnimation()
@@ -658,7 +658,7 @@ application.module 'GraphModule', (GraphModule, App, Backbone, Marionette, $, _)
         @_textDomObj = $(L.DomUtil.get(@_textDomEl))
         @inWidth = $el[0].clientWidth/5
         @_textDomObj.css('width', $el[0].clientWidth)
-        @_textDomObj.css('height', "700px")
+        @_textDomObj.css('height', "970")
         @_textDomObj.css('background-color', 'none')
         @_textDomObj.css('overflow', 'auto')
         L.DomUtil.setOpacity(L.DomUtil.get(@_textDomEl), .8)
@@ -670,7 +670,7 @@ application.module 'GraphModule', (GraphModule, App, Backbone, Marionette, $, _)
         .append("ul"
         ).style("list-style-type", "none"
         ).style("padding-left", "0px"
-        ).style('overflow', 'scroll'
+        ).style('overflow', 'auto'
         ).attr("id", "bios-list")
         .attr("width", $el[0].clientWidth)
         .attr("height", $el[0].clientHeight)

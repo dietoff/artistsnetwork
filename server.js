@@ -44,10 +44,14 @@
 
   BiosSchema = new Schema({
     _id: Schema.Types.ObjectId,
-    Name: String,
-    FirstParagraph: String
+    name: String,
+    Address: String,
+    Location: [String],
+    Date: [String],
+    Organization: String,
+    __text: String
   }, {
-    collection: 'samplebios'
+    collection: 'bios'
   });
 
   ArtistSchema = new Schema({
@@ -141,7 +145,7 @@
   ArtistSchema.methods.findLimited = function(cb) {
     var query;
     query = this.model('Artist').find({});
-    query.limit(2000);
+    query.limit();
     return query.exec(cb);
   };
 
@@ -173,14 +177,14 @@
     var query;
     query = this.model('Artist').find({});
     query.where('group', this.group);
-    query.limit(2000);
+    query.limit();
     return query.exec(cb);
   };
 
   BiosSchema.methods.findByName = function(cb) {
     var query;
     query = this.model('Bios').find({});
-    query.where('Name', this.Name);
+    query.where('name', this.name);
     query.limit();
     return query.exec(cb);
   };
@@ -188,7 +192,7 @@
   ArtistEdgesSchema.methods.findLimited = function(cb) {
     var query;
     query = this.model('ArtistEdges').find({});
-    query.limit(200);
+    query.limit();
     return query.exec(cb);
   };
 
@@ -238,12 +242,10 @@
     var bios;
     res.header('Access-Control-Allow-Origin', '*');
     res.header('Access-Control-Allow-Headers', 'X-Requested-With');
-    console.log("inside req this is n", req.params.n);
     bios = Bios({
-      Name: req.params.n
+      name: req.params.n
     });
     bios.findByName(function(err, bios) {
-      console.log("bios by name", bios);
       return res.json(bios);
     });
   });
@@ -286,16 +288,7 @@
       target: req.params.t
     });
     artist.findByTarget(function(err, artist) {
-      console.log(artist);
-      Artist.findById(artist[0]['_id'], function(err, docs) {
-        var each;
-        if (!err) {
-          each = docs;
-          return res.json(each);
-        } else {
-          return console.log(err);
-        }
-      });
+      res.json(artist);
     });
   });
 
@@ -307,7 +300,6 @@
       group: req.params.g
     });
     artist.findByGroup(function(err, artist) {
-      console.log(artist);
       return res.json(artist);
     });
   });

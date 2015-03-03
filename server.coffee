@@ -25,9 +25,13 @@ app = express()
 Schema = mongoose.Schema
 BiosSchema = new Schema({
   _id: Schema.Types.ObjectId
-  Name: String
-  FirstParagraph: String
-}, collection: 'samplebios')
+  name: String
+  Address: String
+  Location: [String]
+  Date: [String]
+  Organization: String
+  __text: String
+}, collection: 'bios')
 ArtistSchema = new Schema({
   _id: Schema.Types.ObjectId
   source: String
@@ -94,7 +98,7 @@ BiosSchema.methods.findLimited = (cb) ->
 
 ArtistSchema.methods.findLimited = (cb) ->
   query = @model('Artist').find({})
-  query.limit(2000)
+  query.limit()
   query.exec cb
 
 ArtistSchema.methods.findByTarget = (cb) ->
@@ -117,18 +121,18 @@ ArtistNodesSchema.methods.findLimited = (cb) ->
 ArtistSchema.methods.findByGroup = (cb) ->
   query = @model('Artist').find({})
   query.where 'group', @group
-  query.limit(2000)
+  query.limit()
   query.exec cb
 
 BiosSchema.methods.findByName = (cb) ->
   query = @model('Bios').find({})
-  query.where 'Name', @Name
+  query.where 'name', @name
   query.limit()
   query.exec cb
 
 ArtistEdgesSchema.methods.findLimited = (cb) ->
   query = @model('ArtistEdges').find({})
-  query.limit(200)
+  query.limit()
   query.exec cb
 
 # declare mongoose models
@@ -167,10 +171,8 @@ app.get '/bios', (req, res) ->
 app.get '/biosby/:n', (req, res) ->
   res.header 'Access-Control-Allow-Origin', '*'
   res.header 'Access-Control-Allow-Headers', 'X-Requested-With'
-  console.log "inside req this is n", req.params.n
-  bios = Bios(Name: req.params.n)
+  bios = Bios(name: req.params.n)
   bios.findByName (err, bios) ->
-    console.log "bios by name", bios
     res.json bios
   return
 
@@ -231,13 +233,7 @@ app.get '/artstsby/:t', (req, res) ->
   res.header 'Access-Control-Allow-Headers', 'X-Requested-With'
   artist = new Artist(target: req.params.t)
   artist.findByTarget (err, artist) ->
-    console.log artist
-    Artist.findById artist[0]['_id'], (err, docs) ->
-      if !err
-        each = docs
-        res.json each
-      else
-        console.log err
+    res.json artist
     return
   return
 
@@ -246,7 +242,6 @@ app.get '/artistsbygroup/:g', (req, res) ->
   res.header 'Access-Control-Allow-Headers', 'X-Requested-With'
   artist = new Artist(group: req.params.g)
   artist.findByGroup (err, artist) ->
-    console.log artist
     res.json artist
   return
 

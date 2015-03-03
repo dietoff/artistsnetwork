@@ -44,8 +44,10 @@ module.exports = class Router extends Backbone.Marionette.AppRouter
 	ViewController = Marionette.Controller.extend(
 
 		network: ->
-   			@nv = new NetworkView()
-   			application.layout.content.show(@nv)
+			$("svg").html("")
+			$("svg").css("height", "0px")
+			@nv = new NetworkView()
+			application.layout.content.show(@nv)
 
 
 		bios: ->
@@ -88,6 +90,7 @@ module.exports = class Router extends Backbone.Marionette.AppRouter
 			application.vent.trigger "organization"
 
 		location: ->
+			console.log "application in ;ocation call"
 			if @nv is undefined
 				@nv = new NetworkView()
 				application.layout.content.show(@nv)
@@ -99,7 +102,13 @@ module.exports = class Router extends Backbone.Marionette.AppRouter
 				if application.GraphModule.getGraph() is undefined
 					application.GraphModule.makeGraph()
 			application.vent.trigger "location"
-
+		
+		personView: ->
+			console.log "personview in ViewController"
+			@nv.remove(@gv)
+			application.PersonModule.putPersonGraph()
+			# @nv.regionGraph.show()
+		
 	)
 
 	ViewController = new ViewController
@@ -111,3 +120,4 @@ module.exports = class Router extends Backbone.Marionette.AppRouter
 		'offArtist' : 'offArtist'	
 		'organization' : 'organization'
 		'location' : 'location'
+		'person' : 'personView'

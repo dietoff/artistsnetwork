@@ -8,8 +8,12 @@ application.module 'HeaderFooter', (HeaderFooter, App, Backbone, Marionette, $, 
         console.log "makeHeaderFooter"
         return
       Location: =>
+        console.log "applicatoin in header router", application
         application.ViewController.network()
-        
+        return
+      Person: =>
+        console.log "person in header modfu;e"
+        return
         
 
 
@@ -21,6 +25,7 @@ application.module 'HeaderFooter', (HeaderFooter, App, Backbone, Marionette, $, 
     appRoutes:
       "HeaderFooter" : "HeaderFooter"
       'location' : 'Location'
+      'person' : 'Person'
 
   API = 
 
@@ -30,6 +35,9 @@ application.module 'HeaderFooter', (HeaderFooter, App, Backbone, Marionette, $, 
     Location: () ->
       application.vent.trigger "network"
       
+    Person: () ->
+      application.vent.trigger "person"
+      # HeaderFooter.Controller.Person()
 
   HeaderFooter.addInitializer ->
     new HeaderFooter.Router
@@ -48,6 +56,13 @@ application.module 'HeaderFooter', (HeaderFooter, App, Backbone, Marionette, $, 
           $(document).ready =>
             @on "switch-organization:do:view", =>
             console.log "switch-organization trigger"
+          update = () ->  
+            inputvalue = $("searchinput").val()
+            console.log "this inout", inputvalue
+          update()
+          $('input').change update
+              
+            
             # @biosView = new BiosView()      
             # @regionBios.show(@biosView)
             # @orgGraphView = new OrgGraphView()

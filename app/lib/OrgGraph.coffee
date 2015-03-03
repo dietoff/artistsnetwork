@@ -18,7 +18,7 @@ application.module 'OrgGraph', (OrgGraph, App, Backbone, Marionette, $, _) ->
                 # selectedNodes.push 'lat': +d.lat, 'long': +d.long if d.name == link.target.name
               ).transition().duration(100
               ).style("opacity", 1
-              ).attr("r", 15
+              ).attr("r", 10
               ).style("fill", (d) =>
                 return @color(d.group)# @color(sourceNode.id)
               ).style("stroke", (d) =>
@@ -79,11 +79,13 @@ application.module 'OrgGraph', (OrgGraph, App, Backbone, Marionette, $, _) ->
       resetHighlightNodesBy: =>
         @vis.selectAll("circle").transition().duration(500).style("opacity", 0.6).attr("r", (d) ->
           if d.group == 2
-            return Math.sqrt(d.value) * 10
+            return Math.sqrt(d.value) * 2
           else 
-            return 10
+            return 2
         ).style("stroke-width", 1)
         @vis.selectAll("text.nodetext").transition().duration(500).style("opacity", 0)
+      
+            
       # write methods
       # # getAllNodes
       # # getNodesBy(name, value)
@@ -96,7 +98,7 @@ application.module 'OrgGraph', (OrgGraph, App, Backbone, Marionette, $, _) ->
   API = 
 
     OrgGraph: () ->
-      OrgGraph.Controller.OrgGraph()  
+      OrgGraph.Controller.OrgGraph()
 
     highlightNodesBy: (d) ->
       OrgGraph.Controller.highlightNodesBy(d)
@@ -176,6 +178,8 @@ application.module 'OrgGraph', (OrgGraph, App, Backbone, Marionette, $, _) ->
   OrgGraph.someData = 'public data'
 
   OrgGraph.makeOrgGraph = () ->
+    $("svg").html("")
+    $("svg").css("height", "0px")
     # @_nodes = application.GraphModule.Controller.allNodes()
     # @_links = application.GraphModule.Controller.allLinks()
     width = $("#content")[0].clientWidth
@@ -209,10 +213,11 @@ application.module 'OrgGraph', (OrgGraph, App, Backbone, Marionette, $, _) ->
     # svg = d3.select('body').append('svg').attr('width', width).attr('height', height)
     svg = vis = @vis = d3.select('#content  ').append('svg:svg').attr('width', width).attr('height', width)
     force = @force = d3.layout.force(
-    ).gravity(.4
-    ).linkDistance(60
-    ).charge(-300
+    ).gravity(.6
+    ).linkDistance(50
+    ).charge(-150
     ).linkStrength(1
+    ).friction(0.9
     ).size([
       width
       height
@@ -222,7 +227,7 @@ application.module 'OrgGraph', (OrgGraph, App, Backbone, Marionette, $, _) ->
     link = svg.selectAll('.link').data(_links)
     link.enter().insert("line", ".node").attr("class", "link").style("stroke","lightgray").style("stroke-width", (d, i) -> 
         return Math.sqrt(d.target.value)
-      ).style("opacity", 0.8)
+      ).style("opacity", 0.3)
     link.exit().remove()
     
     node = @vis.selectAll('g.node'
@@ -233,21 +238,21 @@ application.module 'OrgGraph', (OrgGraph, App, Backbone, Marionette, $, _) ->
     color = @color
     _artistNodes = @_nodes
     nodes = _nodes
-    nodeEnter = node.enter().append('g').attr('class', 'node').attr("x", 14).attr("dy", ".35em").call(@force.drag)
+    nodeEnter = node.enter().append('g').attr('class', 'node').attr("x", 14).attr("dy", "5.35em").call(@force.drag)
     # nodeEnter.attr("class", "leaflet-zoom-hide")
     nodeEnter.append('circle').property("id", (d, i) => "node-#{i}").attr('r', (d) ->
       if d.group == 2
-        return Math.sqrt(d.value) * 10
+        return Math.sqrt(d.value) * 2
       else
-        return 10
+        return 2
     ).attr('x', '-1px').attr('y', '10px').attr('width', '4px').attr('height', '4px'
     ).style("stroke", "none"
     ).style("opacity", 0.6).style('fill', (d) =>
       return @color(d.group)
     ).on('mouseover', (d, i) ->
       # OrgGraph.Controller.highlightNodesBy(d)
-      # d3.select(this).select('circle').transition().duration(750).attr 'r', 25
-      # d3.select(this).select('text').transition().duration(750).style 'font-size', '20px'
+      # d3.select(this).select('circle').transition().duration(750).attr 'opacity', 0.7
+      # d3.select(this).select('text').transition().duration(750).attr('opacity', 0.7).style 'font-size', '26px'
       return
     ).on('mouseout', (d,i) ->
       # OrgGraph.Controller.resetHighlightNodesBy()
@@ -284,8 +289,6 @@ application.module 'OrgGraph', (OrgGraph, App, Backbone, Marionette, $, _) ->
     viewCenter[0] = -1 * zoom.translate()[0] + 0.5 * width / zoom.scale()
     viewCenter[1] = -1 * zoom.translate()[1] + 0.5 * height / zoom.scale()
     # graphTransform = force.attribute("transform")
-    console.log "zoom", zoom
-    console.log viewCenter
     # console.log graphTransform
     node.transition().duration(750).delay((d, i) ->
       i * 5
@@ -295,7 +298,6 @@ application.module 'OrgGraph', (OrgGraph, App, Backbone, Marionette, $, _) ->
         d.radius = i(t)
     
     # Move d to be adjacent to the cluster node.
-    console.log "clusters", clusters
     cluster = (alpha) ->
       (d) ->
         `var cluster`
@@ -342,17 +344,23 @@ application.module 'OrgGraph', (OrgGraph, App, Backbone, Marionette, $, _) ->
     tick = (e) ->
       # console.log e.alpha
       link.attr('x1', (d) ->
-        d.source.x + 100
+        if d.source.value
+          e.alpha * 100/d.source.value + d.source.x + 100
+        else
+          d.source.x + 400
       ).attr('y1', (d) ->
-        d.source.y
+        if d.source.value
+          e.alpha * 100/d.source.value + d.source.y
+        else
+          d.source.y
       ).attr('x2', (d) ->
-        if d.value 
-          d.target.x  - 100 - (e.alpha * Math.sqrt(d.value))
+        if d.target.value 
+          d.target.x  - 100 - (e.alpha * Math.sqrt(d.target.value))
         else
           d.target.x  - 100 
       ).attr 'y2', (d) ->
         if d.value 
-          d.target.y - 100 - (e.alpha * Math.sqrt(d.value))
+          d.target.y - 100 - (e.alpha * Math.sqrt(d.target.value))
         else
           d.target.y
       # node.each(cluster(10 * e.alpha * e.alpha)).each(collide(.5)).attr('cx', (d) ->
@@ -375,7 +383,7 @@ application.module 'OrgGraph', (OrgGraph, App, Backbone, Marionette, $, _) ->
             y = d.y - e.alpha * 100/d.value
           else
             x = d.x - 100
-            x = d.y
+            y = d.y
           'translate(' + x + ',' + y + ')'
         
       )
@@ -417,16 +425,16 @@ application.module 'OrgGraph', (OrgGraph, App, Backbone, Marionette, $, _) ->
     # node.append('circle').style('fill', (d) ->
     #   color d.group
     # ).attr 'r', 5
-    node.append('text').attr('fill', (d) ->
+    node.append('text').style("font-family", "Gill Sans").attr('fill', (d) ->
       return d3.lab(color(d.group)).darker(2)
-    ).attr('x', 14).attr('dy', '.35em').text (d) ->
+    ).attr("opacity", 0.3).attr('x', 14).attr('dy', '.35em').text (d) ->
       d.name
 
     # ---
     # generated by js2coffee 2.0.1
     # @force.start()
-    node.on('dblclick', (d, i) ->
-
+    node.on('click', (d, i) ->
+      
       neighboring = (a, b) ->
         linkedByIndex[a.index + ',' + b.index]
       if toggle == 0
@@ -438,7 +446,7 @@ application.module 'OrgGraph', (OrgGraph, App, Backbone, Marionette, $, _) ->
         node.selectAll("text").transition(100).style('opacity', (o) ->
           if neighboring(d, o) | neighboring(o, d) then 1 else 0.2
         ).style('font-size', (o) ->
-          if neighboring(d, o) | neighboring(o, d) then 28 else 14
+          if neighboring(d, o) | neighboring(o, d) then 20 else 12
         )
         link.transition(100).style 'opacity', (o) ->
           if d.index == o.source.index | d.index == o.target.index then 1 else 0.1
@@ -447,7 +455,7 @@ application.module 'OrgGraph', (OrgGraph, App, Backbone, Marionette, $, _) ->
         #Put them back to opacity=1
         node.selectAll("circle").transition(100).style 'opacity', 0.6
         link.transition(100).style 'opacity', 1
-        node.selectAll("text").transition(100).style('opacity',  0.8
+        node.selectAll("text").transition(100).style('opacity',  0.3
         ).style('font-size', 14
         )
         OrgGraph.Controller.resetHighlightNodesBy(d)
@@ -455,9 +463,9 @@ application.module 'OrgGraph', (OrgGraph, App, Backbone, Marionette, $, _) ->
       return
     )
 
-    searchNode = ->
+    searchNode = () ->
       #find the node
-      selectedVal = document.getElementById('search').value
+      # selectedVal = document.getElementById('search').value
       node = @vis.selectAll('g.node')
       if selectedVal == 'none'
         node.style('stroke', 'white').style 'stroke-width', '1'

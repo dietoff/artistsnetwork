@@ -18,8 +18,8 @@ application.module 'GraphModule', (GraphModule, App, Backbone, Marionette, $, _)
         @nodeGroup.eachLayer (layer) =>
           layer.setStyle
             # fillColor: color(link.target.group)
-            opacity: 0.3
-            fillOpacity: 0.3
+            opacity: 0.4
+            fillOpacity: 0.4
             weight: 2
           layer.setRadius(3)
           timeout = 0
@@ -27,7 +27,7 @@ application.module 'GraphModule', (GraphModule, App, Backbone, Marionette, $, _)
             $(L.DomUtil.get(layer._container)).animate
               fillOpacity: 0.3
               opacity: 0.3
-            , 100, ->
+            , 10, ->
 
             return
           )
@@ -155,14 +155,17 @@ application.module 'GraphModule', (GraphModule, App, Backbone, Marionette, $, _)
       showBio: (d) =>
         L.DomUtil.setOpacity(L.DomUtil.get(@_bios_domEl), 0.75)
         @fx.run(L.DomUtil.get(@_bios_domEl), L.point(-$(@_m.getContainer())[0].clientWidth/3, 40), 0.5)
+        L.DomUtil.get(@_bios_domEl).innerHTML = "" 
+        console.log "http://localhost:3001/biosby/#{d.name}"
         if @biosFetched is undefined
           textResponse = $.ajax
                       url: "http://localhost:3001/biosby/#{d.name}"
                       success: (result) =>
                         $el = $('#bios')
                         @biosTextResults = result
-                        L.DomUtil.get(@_bios_domEl).innerHTML = ""
-                        L.DomUtil.get(@_bios_domEl).innerHTML += "#{@biosTextResults[0].FirstParagraph}"
+                        console.log "bios result ", result
+                        L.DomUtil.get(@_bios_domEl).innerHTML = "" 
+                        L.DomUtil.get(@_bios_domEl).innerHTML += "#{@biosTextResults[0].__text}"
         else
         
       makeOrgGraph: () =>
@@ -263,6 +266,8 @@ application.module 'GraphModule', (GraphModule, App, Backbone, Marionette, $, _)
         _domObj.css('width', $(@_m.getContainer())[0].clientWidth/3)
         _domObj.css('height', $(@_m.getContainer())[0].clientHeight/3)
         _domObj.css('background-color', 'white')
+        _domObj.css("font-family", "Gill Sans")
+        _domObj.css("font-size", "18px")
         L.DomUtil.setOpacity(L.DomUtil.get(_domEl), 0.0)
         L.DomUtil.setPosition(L.DomUtil.get(_domEl), L.point(-$(@_m.getContainer())[0].clientWidth/1.2, 0), disable3D=0)
         @fx = new L.PosAnimation()
@@ -354,7 +359,8 @@ application.module 'GraphModule', (GraphModule, App, Backbone, Marionette, $, _)
                 fillOpacity: 0.5
                 weight: 1
                 className: "#{eachcnt}"
-                clickable: true).setRadius(Math.sqrt(each.value) * 5).bindPopup("<p style='font-size:12px; line-height:10px; font-style:bold;'>#{each.name}</p><p style='font-size:12px; font-style:italic; line-height:10px;'>#{each.value} artists connected to this location</p>")
+                id: "#{each.name}"
+                clickable: true).setRadius(Math.sqrt(each.value) * 5).bindPopup("<p style='font-size:12px; line-height:10px; font-style:bold;'><a>#{each.name}</p><p style='font-size:12px; font-style:italic; line-height:10px;'>#{each.value} artists connected to this location</p>")
             nodeGroup.addLayer(circle
               # group.addLayer marker
               # circle = L.circleMarker(
@@ -366,8 +372,10 @@ application.module 'GraphModule', (GraphModule, App, Backbone, Marionette, $, _)
               #   )
             )
         nodeGroup.eachLayer (layer) ->
+          # layer.bindLabel("label")
           # layer.bindPopup 'Hello'
           layer.on "click", (e) =>
+
           return
           if each.group == 1 and each.lat
             @_nodesGeojsjon.features.push {"type": "Feature","id": "#{eachcnt}", "geometry":{"type": "point", "coordinates": [+each.long, +each.lat]}, "properties": each.name} if each.lat isnt "0"
@@ -379,17 +387,17 @@ application.module 'GraphModule', (GraphModule, App, Backbone, Marionette, $, _)
         #   latlng,
         #   radius,
         #   ))
+        _textDomEl = L.DomUtil.create('svg', 'graph_upleaflet-zoom-hide', @$el[0])
+        _m.getPanes().overlayPane.appendChild(_textDomEl)
         nodeGroup.addTo(@_m)
-        # _textDomEl = L.DomUtil.create('div', 'graph_up', @$el[0])
-        # _textDomEl.innerHTML += "<div class='graph'></div>"
-        # L.DomUtil.enableTextSelection(_textDomEl) 
+        _textDomEl.innerHTML += "<svg class='graph  '></svg>"
+        L.DomUtil.enableTextSelection(_textDomEl) 
         # L.DomEvent.disableClickPropagation(_textDomEl )
         # L.DomEvent.disableClickPropagation(L.DomUtil.get(_textDomEl))
 
         # L.DomEvent.disableClickPropagation(_textDomEl)
-        # _m.getPanes().overlayPane.appendChild(_textDomEl)
-        # offset = L.DomUtil.getViewportOffset _textDomEl
-        # _textDomObj = $(L.DomUtil.get(_textDomEl))
+        offset = L.DomUtil.getViewportOffset _textDomEl
+        _textDomObj = $(L.DomUtil.get(_textDomEl))
         # draggable = new L.Draggable(_textDomEl)
         # draggable.disable()
         # L.DomEvent.disableClickPropagation(_textDomEl )
@@ -461,30 +469,30 @@ application.module 'GraphModule', (GraphModule, App, Backbone, Marionette, $, _)
           else
             return "node"
         )
-        nodeEnter.append('text').attr('class', 'nodetext').attr('dx', 12).attr('dy', '.35em').style("opacity", 0).attr("fill", (d, i) ->
+        nodeEnter.append('text').attr('class', 'nodetext').attr('dx', 12).attr('dy', '.35em').style("opacity", 0.9).attr("fill", (d, i) ->
           return "gray" #color(i)
         ).attr('id', (d,i) ->
           return i
         ).text((d, i) ->
-          if d.group in [0..3]
-            _leafletli = L.DomUtil.get("node-#{i}")
-            timeout = undefined
-            L.DomEvent.addListener _leafletli, 'click', (e) =>
-              # d3.selectAll(nodeEnter[0]).style("color", "black").style("background-color", "white"
-              # ).style "opacity", 1
-              timeout = 0
-              timeout = setTimeout(->
-                # 
-                # @_m._initPathRoot()
-                if timeout isnt 0 
-                  timeout = 0
-                  # GraphModule.Controller.highlightNodesBy(d)
-              , 600)
-              return 
-            , ->
+          # if d.group in [0..3]
+          #   _leafletli = L.DomUtil.get("node-#{i}")
+          #   timeout = undefined
+          #   L.DomEvent.addListener _leafletli, 'click', (e) =>
+          #     # d3.selectAll(nodeEnter[0]).style("color", "black").style("background-color", "white"
+          #     # ).style "opacity", 1
+          #     timeout = 0
+          #     timeout = setTimeout(->
+          #       # 
+          #       # @_m._initPathRoot()
+          #       if timeout isnt 0 
+          #         timeout = 0
+          #         # GraphModule.Controller.highlightNodesBy(d)
+          #     , 600)
+          #     return 
+          #   , ->
 
-              return
-              e.stopPropagation()
+          #     return
+          #     e.stopPropagation()
 
             return d.name# color(d.group)
         )
@@ -533,12 +541,12 @@ application.module 'GraphModule', (GraphModule, App, Backbone, Marionette, $, _)
     try 
       @_m = L.mapbox.map("map", "arminavn.jhehgjan
         ",
-          zoomAnimation: false
-          dragAnimation: false
+          zoomAnimation: true
+          dragAnimation: true
           attributionControl: false
           zoomAnimationThreshold: 10
           inertiaDeceleration: 4000
-          animate: false
+          animate: true
           duration: 1.75
           zoomControl: false
           infoControl: false
@@ -552,7 +560,7 @@ application.module 'GraphModule', (GraphModule, App, Backbone, Marionette, $, _)
             ], 3)
     @_m.boxZoom.enable()
     @_m.scrollWheelZoom.disable()
-    @_m.dragging.disable()
+    # @_m.dragging.disable()
     @_m.on 'zoomstart', =>
       @force.stop()
     @_m.on 'zoomend dragend', =>

@@ -44,10 +44,14 @@
 
   BiosSchema = new Schema({
     _id: Schema.Types.ObjectId,
-    Name: String,
-    FirstParagraph: String
+    name: String,
+    Address: String,
+    Location: [String],
+    Date: [String],
+    Organization: String,
+    __text: String
   }, {
-    collection: 'samplebios'
+    collection: 'bios'
   });
 
   ArtistSchema = new Schema({
@@ -180,7 +184,7 @@
   BiosSchema.methods.findByName = function(cb) {
     var query;
     query = this.model('Bios').find({});
-    query.where('Name', this.Name);
+    query.where('name', this.name);
     query.limit();
     return query.exec(cb);
   };
@@ -240,7 +244,7 @@
     res.header('Access-Control-Allow-Headers', 'X-Requested-With');
     console.log("inside req this is n", req.params.n);
     bios = Bios({
-      Name: req.params.n
+      name: req.params.n
     });
     bios.findByName(function(err, bios) {
       console.log("bios by name", bios);

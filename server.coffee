@@ -25,9 +25,13 @@ app = express()
 Schema = mongoose.Schema
 BiosSchema = new Schema({
   _id: Schema.Types.ObjectId
-  Name: String
-  FirstParagraph: String
-}, collection: 'samplebios')
+  name: String
+  Address: String
+  Location: [String]
+  Date: [String]
+  Organization: String
+  __text: String
+}, collection: 'bios')
 ArtistSchema = new Schema({
   _id: Schema.Types.ObjectId
   source: String
@@ -122,7 +126,7 @@ ArtistSchema.methods.findByGroup = (cb) ->
 
 BiosSchema.methods.findByName = (cb) ->
   query = @model('Bios').find({})
-  query.where 'Name', @Name
+  query.where 'name', @name
   query.limit()
   query.exec cb
 
@@ -168,7 +172,7 @@ app.get '/biosby/:n', (req, res) ->
   res.header 'Access-Control-Allow-Origin', '*'
   res.header 'Access-Control-Allow-Headers', 'X-Requested-With'
   console.log "inside req this is n", req.params.n
-  bios = Bios(Name: req.params.n)
+  bios = Bios(name: req.params.n)
   bios.findByName (err, bios) ->
     console.log "bios by name", bios
     res.json bios

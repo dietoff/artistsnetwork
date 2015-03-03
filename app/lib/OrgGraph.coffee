@@ -227,7 +227,7 @@ application.module 'OrgGraph', (OrgGraph, App, Backbone, Marionette, $, _) ->
     link = svg.selectAll('.link').data(_links)
     link.enter().insert("line", ".node").attr("class", "link").style("stroke","lightgray").style("stroke-width", (d, i) -> 
         return Math.sqrt(d.target.value)
-      ).style("opacity", 0.8)
+      ).style("opacity", 0.3)
     link.exit().remove()
     
     node = @vis.selectAll('g.node'
@@ -251,8 +251,8 @@ application.module 'OrgGraph', (OrgGraph, App, Backbone, Marionette, $, _) ->
       return @color(d.group)
     ).on('mouseover', (d, i) ->
       # OrgGraph.Controller.highlightNodesBy(d)
-      # d3.select(this).select('circle').transition().duration(750).attr 'r', 25
-      # d3.select(this).select('text').transition().duration(750).style 'font-size', '20px'
+      # d3.select(this).select('circle').transition().duration(750).attr 'opacity', 0.7
+      # d3.select(this).select('text').transition().duration(750).attr('opacity', 0.7).style 'font-size', '26px'
       return
     ).on('mouseout', (d,i) ->
       # OrgGraph.Controller.resetHighlightNodesBy()
@@ -427,7 +427,7 @@ application.module 'OrgGraph', (OrgGraph, App, Backbone, Marionette, $, _) ->
     # ).attr 'r', 5
     node.append('text').style("font-family", "Gill Sans").attr('fill', (d) ->
       return d3.lab(color(d.group)).darker(2)
-    ).attr('x', 14).attr('dy', '.35em').text (d) ->
+    ).attr("opacity", 0.3).attr('x', 14).attr('dy', '.35em').text (d) ->
       d.name
 
     # ---
@@ -446,7 +446,7 @@ application.module 'OrgGraph', (OrgGraph, App, Backbone, Marionette, $, _) ->
         node.selectAll("text").transition(100).style('opacity', (o) ->
           if neighboring(d, o) | neighboring(o, d) then 1 else 0.2
         ).style('font-size', (o) ->
-          if neighboring(d, o) | neighboring(o, d) then 22 else 14
+          if neighboring(d, o) | neighboring(o, d) then 20 else 12
         )
         link.transition(100).style 'opacity', (o) ->
           if d.index == o.source.index | d.index == o.target.index then 1 else 0.1
@@ -455,7 +455,7 @@ application.module 'OrgGraph', (OrgGraph, App, Backbone, Marionette, $, _) ->
         #Put them back to opacity=1
         node.selectAll("circle").transition(100).style 'opacity', 0.6
         link.transition(100).style 'opacity', 1
-        node.selectAll("text").transition(100).style('opacity',  0.8
+        node.selectAll("text").transition(100).style('opacity',  0.3
         ).style('font-size', 14
         )
         OrgGraph.Controller.resetHighlightNodesBy(d)

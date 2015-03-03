@@ -268,7 +268,7 @@ application.module 'GraphModule', (GraphModule, App, Backbone, Marionette, $, _)
         _domObj.css('background-color', 'white')
         _domObj.css("font-family", "Gill Sans")
         _domObj.css("font-size", "16")
-        _domObj.css('overflow', 'scroll')
+        _domObj.css('overflow', 'auto')
         _domObj.css('line-height', '22px')
         L.DomUtil.setOpacity(L.DomUtil.get(_domEl), 0.0)
         L.DomUtil.setPosition(L.DomUtil.get(_domEl), L.point(-$(@_m.getContainer())[0].clientWidth/1.2, 0), disable3D=0)
@@ -360,9 +360,9 @@ application.module 'GraphModule', (GraphModule, App, Backbone, Marionette, $, _)
                 opacity: 0.5
                 fillOpacity: 0.5
                 weight: 1
-                className: "#{eachcnt}"
+                className: "#{eachcnt-1}"
                 id: "#{each.name}"
-                clickable: true).setRadius(Math.sqrt(each.value) * 5).bindPopup("<p style='font-size:12px; line-height:10px; font-style:bold;'><a>#{each.name}</p><p style='font-size:12px; font-style:italic; line-height:10px;'>#{each.value} artists connected to this location</p>")
+                clickable: true).setRadius(Math.sqrt(each.value) * 5)#.bindPopup("<p style='font-size:12px; line-height:10px; font-style:bold;'><a>#{each.name}</p><p style='font-size:12px; font-style:italic; line-height:10px;'>#{each.value} artists connected to this location</p>")
             nodeGroup.addLayer(circle
               # group.addLayer marker
               # circle = L.circleMarker(
@@ -373,15 +373,39 @@ application.module 'GraphModule', (GraphModule, App, Backbone, Marionette, $, _)
               #     anotherCustomProperty: 'More data!'
               #   )
             )
-        nodeGroup.eachLayer (layer) ->
+        nodeGroup.eachLayer (layer) =>
           # layer.bindLabel("label")
           # layer.bindPopup 'Hello'
+          @markers = new L.MarkerClusterGroup([],maxZoom: 8, spiderfyOnMaxZoom:true, zoomToBoundsOnClick:true, spiderfyDistanceMultiplier:2)
+          @markers.addTo(@_m)
           layer.on "click", (e) =>
+            @markers.clearLayers()
+            # console.log layer.options.id
+            # console.log "layer", layer._container
+            textResponse = $.ajax
+                url: "http://localhost:3001/artstsby/#{layer.options.id}"
+                success: (nodes) =>
+                  console.log nodes
+                  currentzoom = @_m.getZoom()
+                  console.log "cureent zoom", currentzoom
+                  # @_m.remove(markers)
+                  marker = new L.CircleMarker([])
+                  nodes.forEach (artist) =>
+                    artistNode = new L.LatLng(+artist.long, +artist.lat)
+                    marker = new L.CircleMarker(artistNode,
+                      color: "blue"
+                      opacity: 0.5
+                      fillOpacity: 0.5
+                      weight: 1
+                      # id: "#{artist.name}"
+                      clickable: true).setRadius(7).bindPopup("<p>#{artist.source}</p>")
+                    @markers.addLayer(marker)
 
           return
           if each.group == 1 and each.lat
             @_nodesGeojsjon.features.push {"type": "Feature","id": "#{eachcnt}", "geometry":{"type": "point", "coordinates": [+each.long, +each.lat]}, "properties": each.name} if each.lat isnt "0"
             eachcnt = 1 + eachcnt
+        @_m.on "viewreset", @markers.clearLayers()
         @nodeGroup = nodeGroup
         # nodeLayer = L.geoJson(@_nodesGeojsjon, pointToLayer: scaledPoint).addTo(@_m)
         # nodeGroup = L.layerGroup([])
@@ -553,6 +577,7 @@ application.module 'GraphModule', (GraphModule, App, Backbone, Marionette, $, _)
           zoomControl: false
           infoControl: false
           easeLinearity: 0.1
+          maxZoom: 5
           )
     catch
       $("#map-region").append("<div id='map'></div>")
@@ -641,7 +666,7 @@ application.module 'GraphModule', (GraphModule, App, Backbone, Marionette, $, _)
         @_textDomObj.css('width', $el[0].clientWidth)
         @_textDomObj.css('height', "700px")
         @_textDomObj.css('background-color', 'none')
-        @_textDomObj.css('overflow', 'scroll')
+        @_textDomObj.css('overflow', 'auto')
         L.DomUtil.setOpacity(L.DomUtil.get(@_textDomEl), .8)
 
         # here it needs to check to see if there is any vewSet avalable if not it should get it from the lates instance or somethign

@@ -235,13 +235,7 @@ app.get '/artstsby/:t', (req, res) ->
   res.header 'Access-Control-Allow-Headers', 'X-Requested-With'
   artist = new Artist(target: req.params.t)
   artist.findByTarget (err, artist) ->
-    console.log artist
-    Artist.findById artist[0]['_id'], (err, docs) ->
-      if !err
-        each = docs
-        res.json each
-      else
-        console.log err
+    res.json artist
     return
   return
 

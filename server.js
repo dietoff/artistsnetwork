@@ -290,16 +290,7 @@
       target: req.params.t
     });
     artist.findByTarget(function(err, artist) {
-      console.log(artist);
-      Artist.findById(artist[0]['_id'], function(err, docs) {
-        var each;
-        if (!err) {
-          each = docs;
-          return res.json(each);
-        } else {
-          return console.log(err);
-        }
-      });
+      res.json(artist);
     });
   });
 

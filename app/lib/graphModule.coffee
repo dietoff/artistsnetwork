@@ -399,7 +399,7 @@ application.module 'GraphModule', (GraphModule, App, Backbone, Marionette, $, _)
           if each.group == 1 and each.lat
             @_nodesGeojsjon.features.push {"type": "Feature","id": "#{eachcnt}", "geometry":{"type": "point", "coordinates": [+each.long, +each.lat]}, "properties": each.name} if each.lat isnt "0"
             eachcnt = 1 + eachcnt
-        @_m.on "viewreset", @markers.clearLayers()
+        # @_m.on "viewreset", @markers.clearLayers()
         @nodeGroup = nodeGroup
         # nodeLayer = L.geoJson(@_nodesGeojsjon, pointToLayer: scaledPoint).addTo(@_m)
         # nodeGroup = L.layerGroup([])

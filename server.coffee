@@ -171,10 +171,8 @@ app.get '/bios', (req, res) ->
 app.get '/biosby/:n', (req, res) ->
   res.header 'Access-Control-Allow-Origin', '*'
   res.header 'Access-Control-Allow-Headers', 'X-Requested-With'
-  console.log "inside req this is n", req.params.n
   bios = Bios(name: req.params.n)
   bios.findByName (err, bios) ->
-    console.log "bios by name", bios
     res.json bios
   return
 
@@ -244,7 +242,6 @@ app.get '/artistsbygroup/:g', (req, res) ->
   res.header 'Access-Control-Allow-Headers', 'X-Requested-With'
   artist = new Artist(group: req.params.g)
   artist.findByGroup (err, artist) ->
-    console.log artist
     res.json artist
   return
 

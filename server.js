@@ -242,12 +242,10 @@
     var bios;
     res.header('Access-Control-Allow-Origin', '*');
     res.header('Access-Control-Allow-Headers', 'X-Requested-With');
-    console.log("inside req this is n", req.params.n);
     bios = Bios({
       name: req.params.n
     });
     bios.findByName(function(err, bios) {
-      console.log("bios by name", bios);
       return res.json(bios);
     });
   });
@@ -302,7 +300,6 @@
       group: req.params.g
     });
     artist.findByGroup(function(err, artist) {
-      console.log(artist);
       return res.json(artist);
     });
   });

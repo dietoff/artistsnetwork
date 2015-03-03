@@ -156,14 +156,12 @@ application.module 'GraphModule', (GraphModule, App, Backbone, Marionette, $, _)
         L.DomUtil.setOpacity(L.DomUtil.get(@_bios_domEl), 0.75)
         @fx.run(L.DomUtil.get(@_bios_domEl), L.point(-$(@_m.getContainer())[0].clientWidth/3, 40), 0.5)
         L.DomUtil.get(@_bios_domEl).innerHTML = "" 
-        console.log "http://localhost:3001/biosby/#{d.name}"
         if @biosFetched is undefined
           textResponse = $.ajax
                       url: "http://localhost:3001/biosby/#{d.name}"
                       success: (result) =>
                         $el = $('#bios')
                         @biosTextResults = result
-                        console.log "bios result ", result
                         L.DomUtil.get(@_bios_domEl).innerHTML = "" 
                         L.DomUtil.get(@_bios_domEl).innerHTML += "#{@biosTextResults[0].__text}"
         else
@@ -380,14 +378,10 @@ application.module 'GraphModule', (GraphModule, App, Backbone, Marionette, $, _)
           @markers.addTo(@_m)
           layer.on "click", (e) =>
             @markers.clearLayers()
-            # console.log layer.options.id
-            # console.log "layer", layer._container
             textResponse = $.ajax
                 url: "http://localhost:3001/artstsby/#{layer.options.id}"
                 success: (nodes) =>
-                  console.log nodes
                   currentzoom = @_m.getZoom()
-                  console.log "cureent zoom", currentzoom
                   # @_m.remove(markers)
                   marker = new L.CircleMarker([])
                   nodes.forEach (artist) =>

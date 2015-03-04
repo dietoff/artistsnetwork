@@ -48,7 +48,7 @@ var node = svg.selectAll(".node")
     .on("touchstart", mouseover)
     .on("touchend", mouseout)
     .call(force.drag)
-     .on('dblclick', connectedNodes);
+     .on('click', connectedNodes);
 
 node.append("circle")
 	.style("fill", function(d) { return color(d.group); })

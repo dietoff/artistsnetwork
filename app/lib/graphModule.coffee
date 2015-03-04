@@ -6,6 +6,8 @@ application.module 'GraphModule', (GraphModule, App, Backbone, Marionette, $, _)
   GraphModule.Controller =
 
       highlightLinksBy: (sourceNode) =>
+        @_m.closePopup()
+        @popupGroup.clearLayers()
         @vis.selectAll("line").filter((d, i) ->
           d.source.name == sourceNode.name
         ).transition().duration(200).style("opacity", 0.9)
@@ -16,6 +18,7 @@ application.module 'GraphModule', (GraphModule, App, Backbone, Marionette, $, _)
 
       highlightNodesBy: (sourceNode) =>
         @nodeGroup.eachLayer (layer) =>
+          @popupGroup.clearLayers()
           layer.setStyle
             # fillColor: color(link.target.group)
             opacity: 0.4
@@ -52,7 +55,15 @@ application.module 'GraphModule', (GraphModule, App, Backbone, Marionette, $, _)
                 #     weight: 2
                 if layer.options.className == "#{link.target.index}"
                 # if id == link.target
+                  popup = new L.Popup()
+                  ltlng = new L.LatLng(layer._latlng.lat, layer._latlng.lng)
+                  popup.setLatLng(ltlng)
+                  popup.setContent("")
+                  popup.setContent(layer.options.id)
+                  @popupGroup.addLayer(popup)
+                    # popup.openPopup()
                   layer.bringToFront()
+                  # layer.openPopup()
                   # try
                     # d3.select(layer).transition(500).style("opacity", 0.9)
                   timeout = 0
@@ -362,29 +373,30 @@ application.module 'GraphModule', (GraphModule, App, Backbone, Marionette, $, _)
         color = @color
         for each in d3.values(_nodes)
           eachcnt = 1 + eachcnt
-          if each.group == 1 and each.lat
-            # L.DomEvent.addListener _graphEl, 'click', (e) ->
-        #     L.DomEvent.stopPropagation e
-        #     return
-            ltlong = new L.LatLng(+each.long, +each.lat)
-            circle = new L.CircleMarker(ltlong,
-                color: color(each.group)
-                opacity: 0.5
-                fillOpacity: 0.5
-                weight: 1
-                className: "#{eachcnt-1}"
-                id: "#{each.name}"
-                clickable: true).setRadius(Math.sqrt(each.value) * 5)#.bindPopup("<p style='font-size:12px; line-height:10px; font-style:bold;'><a>#{each.name}</p><p style='font-size:12px; font-style:italic; line-height:10px;'>#{each.value} artists connected to this location</p>")
-            nodeGroup.addLayer(circle
-              # group.addLayer marker
-              # circle = L.circleMarker(
-              #   [+each.lat, +each.lat],
-              #   5,
-              #   options:
-              #     someCustomProperty: 'Custom data!'
-              #     anotherCustomProperty: 'More data!'
-              #   )
-            )
+          try
+            if each.group == 1 and each.lat
+              # L.DomEvent.addListener _graphEl, 'click', (e) ->
+          #     L.DomEvent.stopPropagation e
+          #     return
+              ltlong = new L.LatLng(+each.lat, +each.long)
+              circle = new L.CircleMarker(ltlong,
+                  color: color(each.group)
+                  opacity: 0.5
+                  fillOpacity: 0.5
+                  weight: 1
+                  className: "#{eachcnt-1}"
+                  id: "#{each.name}"
+                  clickable: true).setRadius(Math.sqrt(each.value) * 5).bindPopup("<p style='font-size:12px; line-height:10px; font-style:bold;'><a>#{each.name}</p><p style='font-size:12px; font-style:italic; line-height:10px;'>#{each.value - 1} artists connected to this location</p>")
+              nodeGroup.addLayer(circle
+                # group.addLayer marker
+                # circle = L.circleMarker(
+                #   [+each.lat, +each.lat],
+                #   5,
+                #   options:
+                #     someCustomProperty: 'Custom data!'
+                #     anotherCustomProperty: 'More data!'
+                #   )
+              )
         nodeGroup.eachLayer (layer) =>
           # layer.bindLabel("label")
           # layer.bindPopup 'Hello'
@@ -399,7 +411,7 @@ application.module 'GraphModule', (GraphModule, App, Backbone, Marionette, $, _)
                   # @_m.remove(markers)
                   marker = new L.CircleMarker([])
                   nodes.forEach (artist) =>
-                    artistNode = new L.LatLng(+artist.long, +artist.lat)
+                    artistNode = new L.LatLng(+artist.lat, +artist.long)
                     marker = new L.CircleMarker(artistNode,
                       color: "blue"
                       opacity: 0.5
@@ -411,7 +423,7 @@ application.module 'GraphModule', (GraphModule, App, Backbone, Marionette, $, _)
 
           return
           if each.group == 1 and each.lat
-            @_nodesGeojsjon.features.push {"type": "Feature","id": "#{eachcnt}", "geometry":{"type": "point", "coordinates": [+each.long, +each.lat]}, "properties": each.name} if each.lat isnt "0"
+            @_nodesGeojsjon.features.push {"type": "Feature","id": "#{eachcnt}", "geometry":{"type": "point", "coordinates": [+each.lat, +each.long]}, "properties": each.name} if each.lat isnt "0"
             eachcnt = 1 + eachcnt
         # @_m.on "viewreset", @markers.clearLayers()
         @nodeGroup = nodeGroup
@@ -539,7 +551,7 @@ application.module 'GraphModule', (GraphModule, App, Backbone, Marionette, $, _)
           try
             node.attr('transform', (d) =>
               if d.group == 1 and d.lat
-                'translate(' + _m.latLngToLayerPoint(L.latLng(d.long, d.lat)).x + ',' + _m.latLngToLayerPoint(L.latLng(d.long, d.lat)).y + ')'
+                'translate(' + _m.latLngToLayerPoint(L.latLng(d.lat, d.long)).x + ',' + _m.latLngToLayerPoint(L.latLng(d.lat, d.long)).y + ')'
               else
                 'translate(' + d.x + ',' + d.y + ')'
             )
@@ -548,13 +560,13 @@ application.module 'GraphModule', (GraphModule, App, Backbone, Marionette, $, _)
             ).attr('y1', (d) =>
               d.source.y
             ).attr('x2', (d) ->
-              if d.target.long
-                _m.latLngToLayerPoint(L.latLng(d.target.long, d.target.lat)).x
+              if d.target.lat
+                _m.latLngToLayerPoint(L.latLng(d.target.lat, d.target.long)).x
               else
                 d.target.x
             ).attr 'y2', (d) ->
               if d.target.long and (document.getElementById("line-#{d.source.index}")) 
-                _m.latLngToLayerPoint(L.latLng(d.target.long, d.target.lat)).y
+                _m.latLngToLayerPoint(L.latLng(d.target.lat, d.target.long)).y
               else
                 d.target.y
           catch e
@@ -652,6 +664,7 @@ application.module 'GraphModule', (GraphModule, App, Backbone, Marionette, $, _)
           # @artistNodes.push {'name' :artist.source, 'id': id, 'group': artist.group}
           # id = id + 1
         # text = []
+        console.log "@_nodes before parsing out the names", @_nodes
         if @_nodes
           text = []
           for key, value of @_nodes            
@@ -665,7 +678,8 @@ application.module 'GraphModule', (GraphModule, App, Backbone, Marionette, $, _)
           @_text = text
         @_m = GraphModule.getMap()  
         # create the control container with a particular class name
-
+        @popupGroup = L.layerGroup([])
+        @popupGroup.addTo(@_m)
         biosRegion = $("#region-bios")
         @_textDomEl = L.DomUtil.create('div', 'container paratext-info')
         @_el = L.DomUtil.create('svg', 'svg')
@@ -746,35 +760,6 @@ application.module 'GraphModule', (GraphModule, App, Backbone, Marionette, $, _)
 
               return
               e.stopPropagation()
-            # L.DomEvent.addListener @_leafletli, 'mouseout', (e) =>
-            #   timeout = 0
-              
-            #   # @force.resume()
-            #   setTimeout (->
-            #     $(L.DomUtil.get(_this._domEl)).animate
-            #       opacity: 0
-            #     , 100, ->
-
-            #     return
-
-            #   # Animation complete.
-            #   )
-            # L.DomEvent.addListener @_leafletli, 'mouseover', (e) ->
-            #   _this.force.stop()
-            #   $(this).css('cursor','pointer')
-            #   e.stopPropagation()
-
-            #   timeout = setTimeout(->
-            #     # 
-            #     _this._m._initPathRoot()
-            #     if timeout isnt 0 
-            #       timeout = 0
-            #       GraphModule.Controller.highlightNodesBy(d)
-            #   , 900)
-            #   return 
-            # , ->
-
-            #   return
             d.name
         ).style("font-family", "Gill Sans").style("font-size", "14px"
         ).style("color", "black"

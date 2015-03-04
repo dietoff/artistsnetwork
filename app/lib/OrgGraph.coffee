@@ -176,6 +176,7 @@ application.module 'OrgGraph', (OrgGraph, App, Backbone, Marionette, $, _) ->
   OrgGraph.makeOrgGraph = () ->
     $("svg").html("")
     $("svg").css("height", "0px")
+    $("#biotraj-graph").remove()
     # @_nodes = application.GraphModule.Controller.allNodes()
     # @_links = application.GraphModule.Controller.allLinks()
     width = $("#content")[0].clientWidth

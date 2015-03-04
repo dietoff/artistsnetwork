@@ -121,7 +121,7 @@ ArtistNodesSchema.methods.findLimited = (cb) ->
 ArtistSchema.methods.findByGroup = (cb) ->
   query = @model('Artist').find({})
   query.where 'group', @group
-  query.limit()
+  query.limit(750)
   query.exec cb
 
 BiosSchema.methods.findByName = (cb) ->

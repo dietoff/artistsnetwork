@@ -353,20 +353,6 @@ application.module 'GraphModule', (GraphModule, App, Backbone, Marionette, $, _)
         _m = @getMap()
         @_nodes = _nodes
         @_links = _links
-        @_nodesGeojsjon =
-          type: "FeatureCollection"
-          features: [
-            type: "Feature"
-            geometry:
-              type: "Point"
-              coordinates: [
-                0.0
-                0.0
-              ]
-
-            properties:
-              prop0: "value0"
-          ]
         eachcnt = 0
         nodeGroup = L.layerGroup([])
         @color = d3.scale.category10()
@@ -413,7 +399,7 @@ application.module 'GraphModule', (GraphModule, App, Backbone, Marionette, $, _)
                   nodes.forEach (artist) =>
                     artistNode = new L.LatLng(+artist.lat, +artist.long)
                     marker = new L.CircleMarker(artistNode,
-                      color: "blue"
+                      color: d3.lab("blue").darker(-2)
                       opacity: 0.5
                       fillOpacity: 0.5
                       weight: 1

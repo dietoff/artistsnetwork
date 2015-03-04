@@ -33,7 +33,6 @@ module.exports = class BiosView extends Backbone.Marionette.LayoutView
                     url: "http://localhost:3001/artists"
                     success: (result) ->
                     	$el = $('#bios')
-                    	console.log result
                     	application.GraphModule.makeDivList($el, Width, Height, _margin, result)
                     	application.GraphModule.makeBioController()	
 				    	return

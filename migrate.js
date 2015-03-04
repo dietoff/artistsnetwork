@@ -24,3 +24,5 @@
 // mongoimport --db artistdb --collection samplebios --type csv --headerline mergedFILE.csv
 
 // mongoimport --db artistdb --collection bios --type json --file xmlTojson3.json --jsonArray
+
+// mongoimport --db artistdb --collection artists --type csv --headerline edgeLocations.csv

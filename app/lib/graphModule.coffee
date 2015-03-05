@@ -413,7 +413,7 @@ application.module 'GraphModule', (GraphModule, App, Backbone, Marionette, $, _)
                   nodes.forEach (artist) =>
                     artistNode = new L.LatLng(+artist.lat, +artist.long)
                     marker = new L.CircleMarker(artistNode,
-                      color: "blue"
+                      color: "yellow"
                       opacity: 0.5
                       fillOpacity: 0.5
                       weight: 1

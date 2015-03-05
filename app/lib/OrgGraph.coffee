@@ -41,11 +41,6 @@ application.module 'OrgGraph', (OrgGraph, App, Backbone, Marionette, $, _) ->
               ).style("fill", (d) =>
                 return @color(d.group)#@color(sourceNode.id)
               ).style("stroke-width", 0
-              # ).transition().duration(0
-              # ).style("opacity", 0.8
-              # ).attr("r", 5
-              # ).style("fill", (d) =>
-              #   return @color(sourceNode.id)
               )
               @vis.selectAll("text.nodetext").filter((d, i) =>
                 d.name == link.target.name
@@ -132,6 +127,7 @@ application.module 'OrgGraph', (OrgGraph, App, Backbone, Marionette, $, _) ->
                         else
                           0
                   i = 0
+                  console.log "sorted?", _links
                   # any links with duplicate source and target get an incremented 'linknum'
                   while i < _links.length
                     if i != 0 and _links[i].source == _links[i - 1].source and _links[i].target == _links[i - 1].target
@@ -141,15 +137,15 @@ application.module 'OrgGraph', (OrgGraph, App, Backbone, Marionette, $, _) ->
                     i++
                   
                   _nodes = {}
-                  clusters = new Array(4)
                   # Compute the distinct nodes from the links.
                   _links.forEach (link) ->
                     r= 50
-                    link.source = _nodes[link.source] or (_nodes[link.source] = name: link.source, group: 1, value:1, r: 50, cluster: 1)
-                    link.target = _nodes[link.target] or (_nodes[link.target] = {name: link.target, group: link.group, lat: link.lat, long: link.long, value:1, r: 50, cluster: link.group})
+                    link.source = _nodes[link.source] or (_nodes[link.source] = name: link.source, group: 1, value:1, r: 50)
+                    link.target = _nodes[link.target] or (_nodes[link.target] = {name: link.target, group: link.group, lat: link.lat, long: link.long, value:1, r: 50})
                     return
                   OrgGraph._nodes = _nodes
                   OrgGraph._links = _links
+                  eachcnt = 0
                   d3.values((_nodes)).forEach (sourceNode) =>
                     _links.forEach (link) => 
                       if link.source.name == sourceNode.name and link.target.name != sourceNode.name
@@ -157,10 +153,10 @@ application.module 'OrgGraph', (OrgGraph, App, Backbone, Marionette, $, _) ->
                         link.target.value += 1
                       return
                     return
-                  clusters
+
                   console.log "_links", _links
                   console.log "_nodes", _nodes
-                  OrgGraph.clusters = clusters
+
   App.addInitializer ->
     new OrgGraph.Router
       controller: API 
@@ -180,13 +176,12 @@ application.module 'OrgGraph', (OrgGraph, App, Backbone, Marionette, $, _) ->
   OrgGraph.makeOrgGraph = () ->
     $("svg").html("")
     $("svg").css("height", "0px")
+    $("#biotraj-graph").remove()
     # @_nodes = application.GraphModule.Controller.allNodes()
     # @_links = application.GraphModule.Controller.allLinks()
     width = $("#content")[0].clientWidth
     height = 1100
     padding = 1.5
-    clusterPadding = 6
-    maxRadius = 12
     
     # number of distinct clusters
     # color = d3.scale.category10().domain(d3.range(m))
@@ -198,6 +193,7 @@ application.module 'OrgGraph', (OrgGraph, App, Backbone, Marionette, $, _) ->
     _nodes = nodes = @_nodes
     _links = links = @_links
     n = d3.values((_nodes)).length
+    console.log "number of nodes:", n
     m = 3
     # clusters = new Array(m)
     # _nodes = d3.range(n).map(->
@@ -273,6 +269,7 @@ application.module 'OrgGraph', (OrgGraph, App, Backbone, Marionette, $, _) ->
 
     node.exit().remove()
     clusters =  OrgGraph.clusters
+
     # force = d3.layout.force().nodes(nodes).links(links).size([
     #   width
     #   height
@@ -298,48 +295,6 @@ application.module 'OrgGraph', (OrgGraph, App, Backbone, Marionette, $, _) ->
         d.radius = i(t)
     
     # Move d to be adjacent to the cluster node.
-    cluster = (alpha) ->
-      (d) ->
-        `var cluster`
-        cluster = clusters[d.group]
-        if cluster == d
-          return
-        x = d.x - cluster.x
-        y = d.y - cluster.y
-        l = Math.sqrt(x * x + y * y)
-        r = d.radius + cluster.radius
-        if l != r
-          l = (l - r) / l * alpha
-          d.x -= x *= l
-          d.y -= y *= l
-          cluster.x += x
-          cluster.y += y
-        return
-    collide = (alpha) ->
-      quadtree = d3.geom.quadtree(nodes)
-      (d) ->
-        r = d.radius + maxRadius + Math.max(padding, clusterPadding)
-        nx1 = d.x - r
-        nx2 = d.x + r
-        ny1 = d.y - r
-        ny2 = d.y + r
-        quadtree.visit (quad, x1, y1, x2, y2) ->
-          `var r`
-          if quad.point and quad.point != d
-            x = d.x - quad.point.x
-            y = d.y - quad.point.y
-            l = Math.sqrt(x * x + y * y)
-            r = d.radius + quad.point.radius + (if d.cluster == quad.point.cluster then padding else clusterPadding)
-            if l < r
-              l = (l - r) / l * alpha
-              d.x -= x *= l
-              d.y -= y *= l
-              quad.point.x += x
-              quad.point.y += y
-          x1 > nx2 or x2 < nx1 or y1 > ny2 or y2 < ny1
-        return
-    (t) ->
-      d.radius = i(t)
     
     tick = (e) ->
       # console.log e.alpha
@@ -432,7 +387,6 @@ application.module 'OrgGraph', (OrgGraph, App, Backbone, Marionette, $, _) ->
 
     # ---
     # generated by js2coffee 2.0.1
-    # @force.start()
     node.on('click', (d, i) ->
       
       neighboring = (a, b) ->

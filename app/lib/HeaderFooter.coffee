@@ -26,6 +26,7 @@ application.module 'HeaderFooter', (HeaderFooter, App, Backbone, Marionette, $, 
       "HeaderFooter" : "HeaderFooter"
       'location' : 'Location'
       'person' : 'Person'
+      'biotraj' : 'Biotraj'
 
   API = 
 
@@ -37,7 +38,10 @@ application.module 'HeaderFooter', (HeaderFooter, App, Backbone, Marionette, $, 
       
     Person: () ->
       application.vent.trigger "person"
-      # HeaderFooter.Controller.Person()
+
+    Biotraj: () ->
+      application.vent.trigger "biotraj"      
+
 
   HeaderFooter.addInitializer ->
     new HeaderFooter.Router

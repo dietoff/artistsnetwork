@@ -34,6 +34,7 @@ class Application extends Backbone.Marionette.Application
             Router = require 'lib/router'            
             OrgGraph = require 'lib/OrgGraph'
             PersonModule = require 'lib/PersonModule'
+            BiotrajModule = require 'lib/BiotrajModule'
             
             @vent = new Backbone.Wreqr.EventAggregator()
             @vent.on 'netwotk', () ->
@@ -51,10 +52,17 @@ class Application extends Backbone.Marionette.Application
             @vent.on "person", () =>
                 console.log "preson in vent"
                 console.log @
-                @module("PersonModule").start()
+                # @module("PersonModule").start()
                 # Backbone.history.navigate "", trigger: false
                 @module("PersonModule").start()
                 Backbone.history.navigate "person", trigger: false
+                # @router.controller.personView()
+            @vent.on "biotraj", () =>
+                console.log "biotraj in vent"
+                # @module("BiotrajModule").start()
+                # Backbone.history.navigate "", trigger: false
+                @module("BiotrajModule").start()
+                Backbone.history.navigate "biotraj", trigger: false
                 # @router.controller.personView()
             @router = new Router()
         )

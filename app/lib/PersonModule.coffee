@@ -84,6 +84,7 @@ application.module 'PersonModule', (PersonModule, App, Backbone, Marionette, $, 
     application.module("GraphModule").stop()
     # application.layout.remove(application.GraphView)
     application.layout.content.empty()
+    $("#biotraj-graph").remove()
     $("#content").html("")
     $("#content").append "<div id='person-graph'></div>"
     # console.log personView

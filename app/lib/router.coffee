@@ -108,6 +108,10 @@ module.exports = class Router extends Backbone.Marionette.AppRouter
 			@nv.remove(@gv)
 			application.PersonModule.putPersonGraph()
 			# @nv.regionGraph.show()
+		biotrajView: ->
+			console.log "biotraj in ViewController"
+			@nv.remove(@gv)
+			application.BiotrajModule.putBiotrajGraph()
 		
 	)
 
@@ -121,3 +125,4 @@ module.exports = class Router extends Backbone.Marionette.AppRouter
 		'organization' : 'organization'
 		'location' : 'location'
 		'person' : 'personView'
+		'biotraj' : 'biotrajView'

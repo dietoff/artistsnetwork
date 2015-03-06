@@ -400,7 +400,11 @@ application.module 'GraphModule', (GraphModule, App, Backbone, Marionette, $, _)
                     artistNode = new L.LatLng(+artist.lat, +artist.long)
                     marker = new L.CircleMarker(artistNode,
 <<<<<<< HEAD
+<<<<<<< HEAD
                       color: "yellow"
+=======
+                      color: d3.lab("blue").darker(-2)
+>>>>>>> arminakvn/master
 =======
                       color: d3.lab("blue").darker(-2)
 >>>>>>> arminakvn/master
